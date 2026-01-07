@@ -5,6 +5,7 @@ import (
 	"github.com/arazumut/Lexa/config"
 	"github.com/arazumut/Lexa/internal/repository"
 	"github.com/arazumut/Lexa/internal/service"
+	transport "github.com/arazumut/Lexa/internal/transport/http" // Alias ile packet adı çakışmasını önle
 	"github.com/arazumut/Lexa/pkg/database"
 	"github.com/arazumut/Lexa/pkg/logger"
 	"github.com/gin-gonic/gin"
@@ -44,9 +45,9 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	
 	// 2. Service (İş Mantığı)
-	// Şimdilik kullanılmadığı için alt çizgi (_) ile susturuldu. İleride handler'a verilecek.
-	_ = service.NewUserService(userRepo)
+	userService := service.NewUserService(userRepo)
 
+	// ---------------------------------------------------------
 	// ---------------------------------------------------------
 	// 🌐 HTTP SERVER (WEB KATMANI)
 	// ---------------------------------------------------------
@@ -58,17 +59,18 @@ func main() {
 
 	r := gin.Default()
 
-	// Basit bir route (Render Health Check için)
-	r.GET("/health", func(c *gin.Context) {
-		logger.Info("Health check çağrıldı")
-		c.JSON(200, gin.H{
-			"status": "UP",
-			"msg":    "Lexa is ready to fight!",
-		})
-	})
-	r.GET("/", func(c *gin.Context) {
-		c.String(200, "⚔️ LEXA: Legal Office Management System - AYAKTA!")
-	})
+	// Front-end Ayarları
+	r.LoadHTMLGlob("web/templates/**/*")
+	r.Static("/assets", "./web/static/assets")
+
+	// Handler'ları Hazırla
+	// Not: Burada 'userService' değişkenini kullanıyoruz (önceden _ idi)
+	// Eğer userService'i daha önce tanımladıysan onu kullan, yoksa burada tekrar tanımlama.
+	// Yukarıdaki kodda "_ = ..." yapmıştık, onu düzeltmemiz lazım.
+	
+	// Router'ı Kur
+	authHandler := transport.NewAuthHandler(userService)
+	transport.NewRouter(r, authHandler)
 
 	logger.Info("🚀 Sunucu başlatılıyor...", zap.String("address", ":"+cfg.AppPort))
 	
