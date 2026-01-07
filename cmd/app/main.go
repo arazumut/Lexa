@@ -37,7 +37,8 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	
 	// 2. Service (İş Mantığı)
-	userService := service.NewUserService(userRepo)
+	// Şimdilik kullanılmadığı için alt çizgi (_) ile susturuldu. İleride handler'a verilecek.
+	_ = service.NewUserService(userRepo)
 
 	// ---------------------------------------------------------
 	// 🌐 HTTP SERVER (WEB KATMANI)
