@@ -1,0 +1,24 @@
+# Git
+.git
+.gitignore
+
+# Go
+bin/
+*.exe
+*.test
+*.out
+vendor/
+
+# Environment
+.env
+
+
+# OS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Render/Docker
+Dockerfile
