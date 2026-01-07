@@ -28,8 +28,8 @@ RUN apk add --no-cache ca-certificates
 # Builder aşamasından binary'i al
 COPY --from=builder /app/lexa .
 
-# Web şablonlarını ve statik dosyaları kopyala (Eğer varsa)
-# COPY --from=builder /app/web ./web
+# Web şablonlarını ve statik dosyaları kopyala
+COPY --from=builder /app/web ./web
 
 # Portu dışarı aç
 EXPOSE 8080
