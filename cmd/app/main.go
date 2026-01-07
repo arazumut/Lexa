@@ -1,27 +1,34 @@
 package main
 
 import (
-	"fmt"
-	"log"
 
 	"github.com/arazumut/Lexa/config"
 	"github.com/arazumut/Lexa/internal/repository"
 	"github.com/arazumut/Lexa/internal/service"
 	"github.com/arazumut/Lexa/pkg/database"
+	"github.com/arazumut/Lexa/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func main() {
-	fmt.Println("⚔️  LEXA: Legal Office Management System Başlatılıyor...")
-
-	// 1. Ayarları Yükle
+	// 1. Ayarları Yükle (En Başta!)
 	cfg := config.LoadConfig()
-	fmt.Printf("🔧 Konfigürasyon: Port=%s, Env=%s, DB=%s\n", cfg.AppPort, cfg.Environment, cfg.DBPath)
 
-	// 2. Veritabanına Bağlan (GORM)
+	// 2. Logger'ı Başlat (Mükemmel Mimari İçin Şart!)
+	logger.InitLogger(cfg.Environment)
+	logger.Info("⚔️  LEXA: Legal Office Management System Başlatılıyor...",
+		zap.String("env", cfg.Environment),
+		zap.String("port", cfg.AppPort),
+	)
+	
+	// Flush: Uygulama kapanırken tüm logları diske/konsola boşaltmayı garanti et.
+	defer logger.Log.Sync()
+
+	// 3. Veritabanına Bağlan (GORM)
 	db, err := database.NewSQLiteDB(cfg.DBPath)
 	if err != nil {
-		log.Fatalf("❌ Veritabanı hatası: %v", err)
+		logger.Fatal("❌ Veritabanı hatası", zap.Error(err))
 	}
 	
 	// GORM'un kendi connection pool yönetimi var ama kapatmak istersek underlying SQL DB'ye erişiriz.
@@ -52,8 +59,8 @@ func main() {
 	r := gin.Default()
 
 	// Basit bir route (Render Health Check için)
-	// internal/transport/http paketini import etmemiz gerekecek, şimdilik inline yapıyorum.
 	r.GET("/health", func(c *gin.Context) {
+		logger.Info("Health check çağrıldı")
 		c.JSON(200, gin.H{
 			"status": "UP",
 			"msg":    "Lexa is ready to fight!",
@@ -63,10 +70,10 @@ func main() {
 		c.String(200, "⚔️ LEXA: Legal Office Management System - AYAKTA!")
 	})
 
-	log.Printf("🚀 Sunucu port %s üzerinde başlatılıyor...", cfg.AppPort)
+	logger.Info("🚀 Sunucu başlatılıyor...", zap.String("address", ":"+cfg.AppPort))
 	
 	// Uygulamayı başlat ve portu dinle (Bloklayıcı işlem)
 	if err := r.Run(":" + cfg.AppPort); err != nil {
-		log.Fatalf("❌ Sunucu başlatılamadı: %v", err)
+		logger.Fatal("❌ Sunucu başlatılamadı", zap.Error(err))
 	}
 }
