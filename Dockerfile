@@ -1,5 +1,5 @@
 # Build Stage
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25rc1-alpine3.21 AS builder
 
 # SQLite için CGO gerekli (gcc, musl-dev)
 RUN apk add --no-cache build-base
