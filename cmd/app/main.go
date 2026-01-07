@@ -8,6 +8,7 @@ import (
 	"github.com/arazumut/Lexa/internal/repository"
 	"github.com/arazumut/Lexa/internal/service"
 	"github.com/arazumut/Lexa/pkg/database"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -39,24 +40,32 @@ func main() {
 	userService := service.NewUserService(userRepo)
 
 	// ---------------------------------------------------------
-	// 🧪 HIZLI TEST (DEBUG İÇİN - SİLİNECEK)
+	// 🌐 HTTP SERVER (WEB KATMANI)
 	// ---------------------------------------------------------
-	log.Println("🧪 'admin@lexa.com' kullanıcısı oluşturuluyor (Test)...")
-	err = userService.Register("admin@lexa.com", "123456", "Sistem Yöneticisi")
-	if err != nil {
-		log.Printf("⚠️ Kullanıcı oluşturma uyarısı: %v", err)
-	} else {
-		log.Println("✅ Test kullanıcısı başarıyla oluşturuldu!")
-	}
 	
-	// Login Testi
-	token, err := userService.Login("admin@lexa.com", "123456")
-	if err != nil {
-		log.Printf("❌ Login başarısız: %v", err)
-	} else {
-		log.Printf("✅ Login başarılı! Token: %s", token)
+	// Gin'i release moduna al (Prod ortamı için)
+	if cfg.Environment == "production" {
+		gin.SetMode(gin.ReleaseMode)
 	}
 
-	// Şimdilik sadece ayakta kalalım
-	log.Println("🚀 Sistem şu an boşta, istek bekleniyor...")
+	r := gin.Default()
+
+	// Basit bir route (Render Health Check için)
+	// internal/transport/http paketini import etmemiz gerekecek, şimdilik inline yapıyorum.
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "UP",
+			"msg":    "Lexa is ready to fight!",
+		})
+	})
+	r.GET("/", func(c *gin.Context) {
+		c.String(200, "⚔️ LEXA: Legal Office Management System - AYAKTA!")
+	})
+
+	log.Printf("🚀 Sunucu port %s üzerinde başlatılıyor...", cfg.AppPort)
+	
+	// Uygulamayı başlat ve portu dinle (Bloklayıcı işlem)
+	if err := r.Run(":" + cfg.AppPort); err != nil {
+		log.Fatalf("❌ Sunucu başlatılamadı: %v", err)
+	}
 }
