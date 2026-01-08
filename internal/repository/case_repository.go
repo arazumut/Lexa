@@ -88,3 +88,24 @@ func (r *caseRepository) RecentCases(limit int) ([]domain.Case, error) {
 		Find(&cases).Error
 	return cases, err
 }
+
+func (r *caseRepository) GetCaseStats() (map[string]int64, error) {
+	stats := make(map[string]int64)
+	
+	// GROUP BY status
+	type Result struct {
+		Status string
+		Count  int64
+	}
+	var results []Result
+
+	err := r.db.Model(&domain.Case{}).Select("status, count(*) as count").Group("status").Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	for _, res := range results {
+		stats[res.Status] = res.Count
+	}
+	return stats, nil
+}

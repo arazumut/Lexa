@@ -84,3 +84,7 @@ func (s *caseService) GetDashboardSummary() (map[string]interface{}, error) {
 		"recent_cases": cases,
 	}, nil
 }
+
+func (s *caseService) GetCaseStatistics() (map[string]int64, error) {
+	return s.repo.GetCaseStats()
+}

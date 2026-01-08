@@ -3,7 +3,6 @@ package http
 import (
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/arazumut/Lexa/internal/domain"
 	"github.com/gin-gonic/gin"

@@ -65,3 +65,11 @@ func (s *clientService) ListClients(page, pageSize int, search string) ([]domain
 
 	return s.repo.FindAll(page, pageSize, search)
 }
+
+func (s *clientService) GetTotalCount() (int64, error) {
+	return s.repo.Count()
+}
+
+func (s *clientService) GetClientStatistics() (map[string]int64, error) {
+	return s.repo.GetClientStats()
+}

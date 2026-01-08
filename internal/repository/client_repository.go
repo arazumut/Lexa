@@ -72,3 +72,31 @@ func (r *clientRepository) FindAll(page, pageSize int, search string) ([]domain.
 
 	return clients, totalCount, filteredCount, nil
 }
+
+func (r *clientRepository) Count() (int64, error) {
+	var count int64
+	err := r.db.Model(&domain.Client{}).Count(&count).Error
+	return count, err
+}
+
+func (r *clientRepository) GetClientStats() (map[string]int64, error) {
+	stats := make(map[string]int64)
+	
+	type Result struct {
+		Type  string
+		Count int64
+	}
+	var results []Result
+
+	// GROUP BY type
+	err := r.db.Model(&domain.Client{}).Select("type, count(*) as count").Group("type").Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	for _, res := range results {
+		stats[res.Type] = res.Count
+	}
+	return stats, nil
+}
+

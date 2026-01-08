@@ -40,6 +40,9 @@ type ClientRepository interface {
 	// FindAll fonksiyonu sayfalama (pagination) ve arama (search) desteği ile döner.
 	// returns: results, totalCount, filteredCount, error
 	FindAll(page, pageSize int, search string) ([]Client, int64, int64, error)
+	Count() (int64, error) // Toplam müvekkil sayısı
+	// GetClientStats müvekkil tiplerine göre sayıları döner (individual: 10, corporate: 5 gibi)
+	GetClientStats() (map[string]int64, error)
 }
 
 // ClientService, iş mantığını soyutlar (Port).
@@ -49,4 +52,7 @@ type ClientService interface {
 	DeleteClient(id uint) error
 	GetClient(id uint) (*Client, error)
 	ListClients(page, pageSize int, search string) ([]Client, int64, int64, error)
+	GetTotalCount() (int64, error)
+	GetClientStatistics() (map[string]int64, error)
 }
+

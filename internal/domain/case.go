@@ -56,6 +56,8 @@ type CaseRepository interface {
 	FindAll(page, pageSize int, search string, clientID uint) ([]Case, int64, int64, error)
 	// RecentCases dashboard için son eklenen veya güncellenen davaları getirir.
 	RecentCases(limit int) ([]Case, error)
+	// GetCaseStats dava durumlarına göre sayıları döner (active: 10, closed: 5 gibi)
+	GetCaseStats() (map[string]int64, error)
 }
 
 // CaseService interface (Port)
@@ -66,4 +68,5 @@ type CaseService interface {
 	GetCase(id uint) (*Case, error)
 	ListCases(page, pageSize int, search string, clientID uint) ([]Case, int64, int64, error)
 	GetDashboardSummary() (map[string]interface{}, error)
+	GetCaseStatistics() (map[string]int64, error)
 }
