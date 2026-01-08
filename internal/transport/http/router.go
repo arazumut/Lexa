@@ -13,7 +13,8 @@ func NewRouter(
 	authHandler *AuthHandler,
 	dashboardHandler *DashboardHandler,
 	clientHandler *ClientHandler,
-	caseHandler *CaseHandler, // Yeni eklendi
+	caseHandler *CaseHandler,
+	hearingHandler *HearingHandler, // Yeni eklendi
 ) {
 	// 1. PUBLIC ROUTE'LAR (Herkes Girebilir)
 	public := r.Group("/")
@@ -48,5 +49,15 @@ func NewRouter(
 		protected.POST("/api/cases", caseHandler.Create)
 		protected.PUT("/api/cases/:id", caseHandler.Update)
 		protected.DELETE("/api/cases/:id", caseHandler.Delete)
+
+		// Duruşma (Hearing) İşlemleri
+		protected.GET("/hearings", hearingHandler.ShowList)
+		protected.GET("/hearings/new", hearingHandler.ShowCreate)
+		protected.GET("/hearings/:id/edit", hearingHandler.ShowEdit)
+		
+		protected.GET("/api/hearings", hearingHandler.List)
+		protected.POST("/api/hearings", hearingHandler.Create)
+		protected.PUT("/api/hearings/:id", hearingHandler.Update)
+		protected.DELETE("/api/hearings/:id", hearingHandler.Delete)
 	}
 }

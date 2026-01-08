@@ -1,0 +1,152 @@
+{{ define "content" }}
+<div class="block-header">
+    <div class="row">
+        <div class="col-lg-6 col-md-8 col-sm-12">
+            <h2><a href="/hearings" class="btn btn-xs btn-link btn-toggle-fullwidth"><i
+                        class="fa fa-arrow-left"></i></a>
+                Duruşma Düzenle</h2>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/"><i class="icon-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="/hearings">Duruşmalar</a></li>
+                <li class="breadcrumb-item active">Düzenle</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h2>Duruşma Bilgilerini Güncelle</h2>
+            </div>
+            <div class="body">
+                <form id="editHearingForm">
+                    <input type="hidden" name="id" value="{{ .hearing.ID }}">
+
+                    <div class="row clearfix">
+                        <!-- Temel Bilgiler -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>İlgili Dava Dosyası <span class="text-danger">*</span></label>
+                                <select class="form-control show-tick" name="case_id" required>
+                                    {{ $currentCase := .hearing.CaseID }}
+                                    {{ range .cases }}
+                                    <option value="{{ .ID }}" {{ if eq .ID $currentCase }}selected{{ end }}>
+                                        {{ .FileNumber }} - {{ .Title }} ({{ .Client.Name }})
+                                    </option>
+                                    {{ end }}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Konu / İşlem <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="title" required
+                                    value="{{ .hearing.Title }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Tarih ve Saat <span class="text-danger">*</span></label>
+                                <!-- JS ile doldurulacak -->
+                                <input type="datetime-local" class="form-control" name="date" id="dateInput" required>
+                            </div>
+                        </div>
+
+                        <!-- Detaylar -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Yer / Konum</label>
+                                <input type="text" class="form-control" name="location" value="{{ .hearing.Location }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Durum</label>
+                                <select class="form-control" name="status">
+                                    <option value="scheduled" {{ if eq .hearing.Status "scheduled" }}selected{{ end }}>
+                                        Planlandı</option>
+                                    <option value="completed" {{ if eq .hearing.Status "completed" }}selected{{ end }}>
+                                        Tamamlandı</option>
+                                    <option value="postponed" {{ if eq .hearing.Status "postponed" }}selected{{ end }}>
+                                        Ertelendi</option>
+                                    <option value="cancelled" {{ if eq .hearing.Status "cancelled" }}selected{{ end }}>
+                                        İptal</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Sonuç / Karar Notu</label>
+                                <textarea class="form-control" rows="3" name="result"
+                                    placeholder="Duruşma sonucu ne oldu?">{{ .hearing.Result }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label>Hazırlık Notları</label>
+                                <textarea class="form-control" rows="2"
+                                    name="description">{{ .hearing.Description }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <br>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Güncelle</button>
+                    <a href="/hearings" class="btn btn-secondary">İptal</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ define "scripts" }}
+<!-- Moment JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Tarihi input'a set et (datetime-local format: YYYY-MM-DDTHH:mm)
+        var rawDate = "{{ .hearing.Date }}";
+        if (rawDate) {
+            // Go'dan gelen tarih RFC3339 formatında. 
+            // datetime-local inputu saniyeyi ve timezone'u sevmez, sadece YYYY-MM-DDTHH:mm bekler.
+            var formatted = moment(rawDate).format('YYYY-MM-DDTHH:mm');
+            $('#dateInput').val(formatted);
+        }
+
+        $('#editHearingForm').on('submit', function (e) {
+            e.preventDefault();
+            var id = $('input[name="id"]').val();
+
+            var FormData = {};
+            $(this).serializeArray().forEach(function (item) {
+                if (item.name === 'case_id') {
+                    FormData[item.name] = parseInt(item.value);
+                } else if (item.name === 'date') {
+                    var d = new Date(item.value);
+                    FormData[item.name] = d.toISOString();
+                } else {
+                    FormData[item.name] = item.value;
+                }
+            });
+
+            $.ajax({
+                url: '/api/hearings/' + id,
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(FormData),
+                success: function (response) {
+                    toastr.success(response.message, "Başarılı");
+                    setTimeout(function () {
+                        window.location.href = "/hearings";
+                    }, 1500);
+                },
+                error: function (xhr) {
+                    var errBox = xhr.responseJSON ? xhr.responseJSON.error : "Hata oluştu";
+                    toastr.error(errBox, "Hata");
+                }
+            });
+        });
+    });
+</script>
+{{ end }}

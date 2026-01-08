@@ -1,0 +1,120 @@
+{{ define "content" }}
+<div class="block-header">
+    <div class="row">
+        <div class="col-lg-6 col-md-8 col-sm-12">
+            <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i
+                        class="fa fa-arrow-left"></i></a> Duruşmalar</h2>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/"><i class="icon-home"></i></a></li>
+                <li class="breadcrumb-item">Duruşma Takibi</li>
+            </ul>
+        </div>
+        <div class="col-lg-6 col-md-4 col-sm-12 text-right">
+            <div class="d-flex flex-row-reverse">
+                <a href="/hearings/new" class="btn btn-primary"><i class="fa fa-plus"></i> Yeni Duruşma Planla</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h2>Yaklaşan ve Geçmiş Duruşmalar</h2>
+            </div>
+            <div class="body">
+                <div class="table-responsive">
+                    <table class="table table-hover js-basic-example dataTable table-custom" id="hearingsTable">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Tarih / Saat</th>
+                                <th>Durum</th>
+                                <th>Dava Dosyası</th>
+                                <th>Konu</th>
+                                <th>Konum / Mahkeme</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- DataTables -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ define "scripts" }}
+<link rel="stylesheet" href="/assets/vendor/jquery-datatable/dataTables.bootstrap4.min.css">
+<script src="/assets/bundles/datatablescripts.bundle.js"></script>
+
+<!-- Moment JS için gerekli olabilir, DataTables tarih sort için -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#hearingsTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": "/api/hearings",
+            "order": [[0, "asc"]], // Tarihe göre artan (En yakın en üstte)
+            "columns": [
+                {
+                    "data": "date", "render": function (data) {
+                        // Tarih formatlama
+                        return moment(data).format('DD.MM.YYYY HH:mm');
+                    }
+                },
+                {
+                    "data": "status", "render": function (data) {
+                        var map = {
+                            'scheduled': '<span class="badge badge-primary">Planlandı</span>',
+                            'completed': '<span class="badge badge-success">Tamamlandı</span>',
+                            'postponed': '<span class="badge badge-warning">Ertelendi</span>',
+                            'cancelled': '<span class="badge badge-danger">İptal</span>'
+                        };
+                        return map[data] || data;
+                    }
+                },
+                {
+                    "data": "case", "render": function (data) {
+                        // Case null gelebilir mi? Teoride hayır ama kontrol edelim
+                        if (!data) return '-';
+                        return '<a href="/cases/' + data.id + '/edit"><strong>' + data.file_number + '</strong></a><br><small>' + data.client.name + '</small>';
+                    }
+                },
+                { "data": "title" },
+                { "data": "location" },
+                {
+                    "data": "id", "orderable": false, "render": function (data) {
+                        return '<a href="/hearings/' + data + '/edit" class="btn btn-sm btn-outline-secondary" title="Düzenle"><i class="fa fa-edit"></i></a>' +
+                            ' <button class="btn btn-sm btn-outline-danger" onclick="deleteHearing(' + data + ')" title="Sil"><i class="fa fa-trash-o"></i></button>';
+                    }
+                }
+            ],
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Turkish.json"
+            }
+        });
+    });
+
+    function deleteHearing(id) {
+        if (confirm("Bu duruşma kaydını silmek istediğinize emin misiniz?")) {
+            $.ajax({
+                url: '/api/hearings/' + id,
+                type: 'DELETE',
+                success: function (result) {
+                    toastr.success("Duruşma silindi.", "Başarılı");
+                    $('#hearingsTable').DataTable().ajax.reload();
+                },
+                error: function (xhr) {
+                    toastr.error("Hata: " + (xhr.responseJSON ? xhr.responseJSON.error : "Bilinmeyen hata"), "Hata");
+                }
+            });
+        }
+    }
+</script>
+{{ end }}

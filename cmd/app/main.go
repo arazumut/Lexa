@@ -35,7 +35,7 @@ func main() {
 
 	// 🛠 DATABASE MIGRATION (Tablo Oluşturma)
 	// Eksik tablolaları otomatik oluşturur.
-	db.AutoMigrate(&domain.User{}, &domain.Client{}, &domain.Case{}) // Case tablosunu ekledik
+	db.AutoMigrate(&domain.User{}, &domain.Client{}, &domain.Case{}, &domain.Hearing{}) // Hearing tablosunu ekledik
 	
 	// GORM'un kendi connection pool yönetimi var ama kapatmak istersek underlying SQL DB'ye erişiriz.
 	// main fonksiyonu bitince connection pool da kapanır.
@@ -49,16 +49,17 @@ func main() {
 	// 1. Repository (Veri Kaynağı)
 	userRepo := repository.NewUserRepository(db)
 	clientRepo := repository.NewClientRepository(db)
-	caseRepo := repository.NewCaseRepository(db) // YENİ: Case Repository
+	caseRepo := repository.NewCaseRepository(db)
+	hearingRepo := repository.NewHearingRepository(db) // YENİ
 	
 	// 2. Service (İş Mantığı)
-	// JWT Secret'ı .env'den almalıydık ama şimdilik hardcoded. PROD'da bunu düzeltmeliyiz!
 	jwtSecret := "super-secret-key-change-me" 
-	jwtService := service.NewJWTService(jwtSecret, "lexa-app", 24) // 24 Saat geçerli
+	jwtService := service.NewJWTService(jwtSecret, "lexa-app", 24)
 	
 	userService := service.NewUserService(userRepo, jwtService)
 	clientService := service.NewClientService(clientRepo)
-	caseService := service.NewCaseService(caseRepo, clientRepo) // YENİ: Case Service (ClientRepo gerekli)
+	caseService := service.NewCaseService(caseRepo, clientRepo)
+	hearingService := service.NewHearingService(hearingRepo, caseRepo) // YENİ (CaseRepo'ya ihtiyacı var)
 
 	// ---------------------------------------------------------
 	// ---------------------------------------------------------
@@ -83,10 +84,13 @@ func main() {
 	clientHandler := transport.NewClientHandler(clientService)
 
 	// CaseHandler, dropdown doldurmak için ClientService'e de ihtiyaç duyar
-	caseHandler := transport.NewCaseHandler(caseService, clientService) // YENİ: Case Handler
+	caseHandler := transport.NewCaseHandler(caseService, clientService)
 	
+	// Hearing Handler (CaseService' e de ihtiyacı var dropdown için)
+	hearingHandler := transport.NewHearingHandler(hearingService, caseService) // YENİ
+
 	// Router'ı Kur (Dependency Injection)
-	transport.NewRouter(r, jwtService, authHandler, dashboardHandler, clientHandler, caseHandler)
+	transport.NewRouter(r, jwtService, authHandler, dashboardHandler, clientHandler, caseHandler, hearingHandler)
 
 	logger.Info("🚀 Sunucu başlatılıyor...", zap.String("address", ":"+cfg.AppPort))
 	

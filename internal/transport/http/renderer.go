@@ -37,6 +37,11 @@ func NewRenderer() multitemplate.Renderer {
 	r.AddFromFiles("cases/create.html", baseLayout, filepath.Join(templatesDir, "cases", "create.html"))
 	r.AddFromFiles("cases/edit.html", baseLayout, filepath.Join(templatesDir, "cases", "edit.html"))
 
+	// Duruşmalar (Hearings)
+	r.AddFromFiles("hearings/list.html", baseLayout, filepath.Join(templatesDir, "hearings", "list.html"))
+	r.AddFromFiles("hearings/create.html", baseLayout, filepath.Join(templatesDir, "hearings", "create.html"))
+	r.AddFromFiles("hearings/edit.html", baseLayout, filepath.Join(templatesDir, "hearings", "edit.html"))
+
 	// Yeni sayfalar buraya eklenecek...
 
 	return r

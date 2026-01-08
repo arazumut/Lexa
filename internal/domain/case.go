@@ -39,6 +39,7 @@ type Case struct {
 	Status      CaseStatus     `gorm:"size:20;default:'active'" json:"status"` // Durum
 	Description string         `gorm:"type:text" json:"description"`           // Detaylı Açıklama
 	StartDate   time.Time      `json:"start_date"`                             // Dava Açılış Tarihi
+	Hearings    []Hearing      `gorm:"foreignKey:CaseID" json:"hearings,omitempty"` // İlişki: Bir davanın çok duruşması olur
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
