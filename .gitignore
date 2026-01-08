@@ -18,7 +18,6 @@
 go.work
 
 # Lexa spesifik
-*.db
 /bin/
 /tmp/
 .DS_Store
