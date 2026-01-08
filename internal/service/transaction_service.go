@@ -2,8 +2,6 @@ package service
 
 import (
 	"errors"
-	"time"
-
 	"github.com/arazumut/Lexa/internal/domain"
 )
 

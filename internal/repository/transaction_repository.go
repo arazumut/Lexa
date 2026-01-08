@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"time"
-
 	"github.com/arazumut/Lexa/internal/domain"
 	"gorm.io/gorm"
 )
