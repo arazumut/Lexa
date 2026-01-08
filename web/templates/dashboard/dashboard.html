@@ -1,102 +1,93 @@
-<!DOCTYPE html>
-<html lang="tr">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ .title }}</title>
-    <!-- Iconic Assets -->
-    <link rel="stylesheet" href="/assets/css/main.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-
-<body class="bg-gray-50">
-
-    <!-- Navbar -->
-    <nav class="bg-white border-b border-gray-200 px-4 py-2.5 fixed left-0 right-0 top-0 z-50">
-        <div class="flex flex-wrap justify-between items-center">
-            <div class="flex justify-start items-center">
-                <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">⚔️
-                    LEXA</span>
-            </div>
-            <div class="flex items-center lg:order-2">
-                <div class="text-sm mr-4">
-                    Rol: <strong>{{ .role }}</strong>
-                </div>
-                <!-- Çıkış Butonu (Basit Javascript ile Cookie silip redirect yapacağız) -->
-                <button onclick="logout()"
-                    class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2 lg:px-5 lg:py-2.5 mr-2 focus:outline-none">Çıkış
-                    Yap</button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Sidebar -->
-    <aside
-        class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full bg-white border-r border-gray-200 sm:translate-x-0"
-        aria-label="Sidebar">
-        <div class="h-full px-3 pb-4 overflow-y-auto bg-white">
-            <ul class="space-y-2 font-medium">
-                <li>
-                    <a href="/"
-                        class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                        <span class="ml-3">🏠 Dashboard</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#"
-                        class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                        <span class="ml-3">👥 Müvekkiller</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#"
-                        class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                        <span class="ml-3">📁 Dosyalar</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#"
-                        class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                        <span class="ml-3">💰 Muhasebe</span>
-                    </a>
-                </li>
+{{ define "content" }}
+<div class="block-header">
+    <div class="row">
+        <div class="col-lg-6 col-md-6 col-sm-12">
+            <h2>Dashboard</h2>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/"><i class="fa fa-dashboard"></i></a></li>
+                <li class="breadcrumb-item">Dashboard</li>
+                <li class="breadcrumb-item active">Genel Bakış</li>
             </ul>
         </div>
-    </aside>
-
-    <!-- Main Content -->
-    <div class="p-4 sm:ml-64 pt-20">
-        <div class="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700">
-            <div class="grid grid-cols-3 gap-4 mb-4">
-                <div class="flex items-center justify-center h-24 rounded bg-blue-50 dark:bg-gray-800">
-                    <p class="text-2xl text-blue-500">Hoşgeldin!</p>
+        <div class="col-lg-6 col-md-6 col-sm-12">
+            <div class="d-flex flex-row-reverse">
+                <div class="page_action">
+                    <button type="button" class="btn btn-primary"><i class="fa fa-plus"></i> Yeni Dosya</button>
+                    <button type="button" class="btn btn-secondary"><i class="fa fa-user-plus"></i> Yeni
+                        Müvekkil</button>
                 </div>
-                <div class="flex items-center justify-center h-24 rounded bg-green-50 dark:bg-gray-800">
-                    <p class="text-xl text-gray-500">Aktif Dosya: 0</p>
-                </div>
-                <div class="flex items-center justify-center h-24 rounded bg-purple-50 dark:bg-gray-800">
-                    <p class="text-xl text-gray-500">Müvekkiller: 0</p>
-                </div>
-            </div>
-
-            <div class="flex items-center justify-center h-96 mb-4 rounded bg-gray-50 dark:bg-gray-800">
-                <p class="text-2xl text-gray-400">
-                    BURAYA DASHBOARD İÇERİĞİ GELECEK <br>
-                    (Grafikler, Son Hareketler vs.)
-                </p>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        function logout() {
-            // Cookie'yi sil
-            document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            // Login'e yönlendir
-            window.location.href = "/login";
-        }
-    </script>
-</body>
+<div class="row clearfix row-deck">
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card number-chart">
+            <div class="body">
+                <span class="text-uppercase">Dosyalar</span>
+                <h4 class="mb-0 mt-2">0 <i class="fa fa-level-up font-12"></i></h4>
+                <small class="text-muted">Aktif Dava Dosyaları</small>
+            </div>
+            <div class="sparkline" data-type="line" data-spot-Radius="0" data-offset="90" data-width="100%"
+                data-height="50px" data-line-Width="1" data-line-Color="#39afa6" data-fill-Color="#73cec7">4,1,5,2,7,3,4
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card number-chart">
+            <div class="body">
+                <span class="text-uppercase">Müvekkiller</span>
+                <h4 class="mb-0 mt-2">0</h4>
+                <small class="text-muted">Toplam Müvekkil</small>
+            </div>
+            <div class="sparkline" data-type="line" data-spot-Radius="0" data-offset="90" data-width="100%"
+                data-height="50px" data-line-Width="1" data-line-Color="#ffa901" data-fill-Color="#efc26b">1,4,2,3,6,2
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card number-chart">
+            <div class="body">
+                <span class="text-uppercase">Bakiye</span>
+                <h4 class="mb-0 mt-2">0₺</h4>
+                <small class="text-muted">Toplam Tahsilat</small>
+            </div>
+            <div class="sparkline" data-type="line" data-spot-Radius="0" data-offset="90" data-width="100%"
+                data-height="50px" data-line-Width="1" data-line-Color="#38c172" data-fill-Color="#84d4a6">1,4,2,3,1,5
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card number-chart">
+            <div class="body">
+                <span class="text-uppercase">Bekleyen</span>
+                <h4 class="mb-0 mt-2">0</h4>
+                <small class="text-muted">Yaklaşan Duruşmalar</small>
+            </div>
+            <div class="sparkline" data-type="line" data-spot-Radius="0" data-offset="90" data-width="100%"
+                data-height="50px" data-line-Width="1" data-line-Color="#226fd8" data-fill-Color="#7ea7de">1,3,5,1,4,2
+            </div>
+        </div>
+    </div>
+</div>
 
-</html>
+<div class="row clearfix row-deck">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h2>Gelir/Gider Özeti</h2>
+            </div>
+            <div class="body">
+                <div id="Google-Analytics-Dashboard" style="height: 230px"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ define "scripts" }}
+<script src="/assets/js/index.js"></script>
+{{ end }}
+
+{{ template "base" . }}
