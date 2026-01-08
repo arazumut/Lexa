@@ -1,6 +1,8 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/arazumut/Lexa/internal/domain"
 	"github.com/arazumut/Lexa/pkg/logger"
 	"github.com/gin-gonic/gin"
@@ -39,7 +41,12 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	// Başarılı giriş
-	// Şimdilik sadece token basıyoruz, ileride Cookie'ye atacağız.
 	logger.Info("Kullanıcı giriş yaptı", zap.String("email", email))
-	c.String(200, "Giriş Başarılı! Token: "+token)
+	
+	// Cookie'ye yaz (HTTPOnly: JS erişemez, Secure: Sadece HTTPS)
+	// c.SetCookie(name, value, maxAge, path, domain, secure, httpOnly)
+	c.SetCookie("Authorization", token, 3600*24, "/", "", false, true) // Localde secure=false
+
+	// Dashboard'a yönlendir
+	c.Redirect(http.StatusFound, "/")
 }

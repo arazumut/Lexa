@@ -9,12 +9,16 @@ import (
 )
 
 type userService struct {
-	repo domain.UserRepository
+	repo       domain.UserRepository
+	jwtService JWTService
 }
 
 // NewUserService, iş mantığını içeren servisi oluşturur.
-func NewUserService(repo domain.UserRepository) domain.UserService {
-	return &userService{repo: repo}
+func NewUserService(repo domain.UserRepository, jwtService JWTService) domain.UserService {
+	return &userService{
+		repo:       repo,
+		jwtService: jwtService,
+	}
 }
 
 // Register, yeni kullanıcı kaydeder. Şifreyi hash'ler.
@@ -48,7 +52,7 @@ func (s *userService) Register(email, password, name string) error {
 }
 
 // Login, email ve şifre kontrolü yapar.
-// Başarılı ise JWT token döner (Şimdilik dummy string).
+// Başarılı ise JWT token döner.
 func (s *userService) Login(email, password string) (string, error) {
 	// 1. Kullanıcıyı bul
 	user, err := s.repo.GetByEmail(email)
@@ -65,8 +69,11 @@ func (s *userService) Login(email, password string) (string, error) {
 		return "", errors.New("kullanıcı bulunamadı veya şifre hatalı") // Güvenlik için genel hata mesajı
 	}
 
-	// 3. Token oluştur (İleride JWT implemente edilecek)
-	token := "dummy_jwt_token_for_" + user.Email
+	// 3. Token oluştur (Artık GERÇEK JWT!)
+	token, err := s.jwtService.GenerateToken(user.ID, user.Email, user.Role)
+	if err != nil {
+		return "", err
+	}
 
 	return token, nil
 }

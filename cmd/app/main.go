@@ -45,7 +45,11 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	
 	// 2. Service (İş Mantığı)
-	userService := service.NewUserService(userRepo)
+	// JWT Secret'ı .env'den almalıydık ama şimdilik hardcoded. PROD'da bunu düzeltmeliyiz!
+	jwtSecret := "super-secret-key-change-me" 
+	jwtService := service.NewJWTService(jwtSecret, "lexa-app", 24) // 24 Saat geçerli
+	
+	userService := service.NewUserService(userRepo, jwtService)
 
 	// ---------------------------------------------------------
 	// ---------------------------------------------------------
