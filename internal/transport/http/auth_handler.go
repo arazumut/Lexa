@@ -43,9 +43,13 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	// Başarılı giriş
 	logger.Info("Kullanıcı giriş yaptı", zap.String("email", email))
 	
-	// Cookie'ye yaz (HTTPOnly: JS erişemez, Secure: Sadece HTTPS)
+	// Cookie'ye yaz
+	// Localhost'ta (HTTP) Secure=false olmak ZORUNDA. Yoksa tarayıcı cookie'yi kaydetmez.
 	// c.SetCookie(name, value, maxAge, path, domain, secure, httpOnly)
-	c.SetCookie("Authorization", token, 3600*24, "/", "", false, true) // Localde secure=false
+	c.SetCookie("Authorization", token, 3600*24, "/", "", false, true)
+
+	logger.Info("✅ Token Cookie'ye yazıldı, Dashboard'a yönlendiriliyor...", 
+		zap.String("token_part", token[:10]+"...")) // Loglayıp görelim
 
 	// Dashboard'a yönlendir
 	c.Redirect(http.StatusFound, "/")

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <!-- Iconic Assets -->
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-gray-50">
+
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-gray-200 px-4 py-2.5 fixed left-0 right-0 top-0 z-50">
+        <div class="flex flex-wrap justify-between items-center">
+            <div class="flex justify-start items-center">
+                <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">⚔️
+                    LEXA</span>
+            </div>
+            <div class="flex items-center lg:order-2">
+                <div class="text-sm mr-4">
+                    Rol: <strong>{{ .role }}</strong>
+                </div>
+                <!-- Çıkış Butonu (Basit Javascript ile Cookie silip redirect yapacağız) -->
+                <button onclick="logout()"
+                    class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2 lg:px-5 lg:py-2.5 mr-2 focus:outline-none">Çıkış
+                    Yap</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside
+        class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full bg-white border-r border-gray-200 sm:translate-x-0"
+        aria-label="Sidebar">
+        <div class="h-full px-3 pb-4 overflow-y-auto bg-white">
+            <ul class="space-y-2 font-medium">
+                <li>
+                    <a href="/"
+                        class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <span class="ml-3">🏠 Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#"
+                        class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <span class="ml-3">👥 Müvekkiller</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#"
+                        class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <span class="ml-3">📁 Dosyalar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#"
+                        class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <span class="ml-3">💰 Muhasebe</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="p-4 sm:ml-64 pt-20">
+        <div class="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700">
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="flex items-center justify-center h-24 rounded bg-blue-50 dark:bg-gray-800">
+                    <p class="text-2xl text-blue-500">Hoşgeldin!</p>
+                </div>
+                <div class="flex items-center justify-center h-24 rounded bg-green-50 dark:bg-gray-800">
+                    <p class="text-xl text-gray-500">Aktif Dosya: 0</p>
+                </div>
+                <div class="flex items-center justify-center h-24 rounded bg-purple-50 dark:bg-gray-800">
+                    <p class="text-xl text-gray-500">Müvekkiller: 0</p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center h-96 mb-4 rounded bg-gray-50 dark:bg-gray-800">
+                <p class="text-2xl text-gray-400">
+                    BURAYA DASHBOARD İÇERİĞİ GELECEK <br>
+                    (Grafikler, Son Hareketler vs.)
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function logout() {
+            // Cookie'yi sil
+            document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            // Login'e yönlendir
+            window.location.href = "/login";
+        }
+    </script>
+</body>
+
+</html>

@@ -6,6 +6,7 @@ import (
 
 	"github.com/arazumut/Lexa/internal/service"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // AuthMiddleware, korumalı route'lar için kimlik doğrulaması yapar.
@@ -16,10 +17,13 @@ func AuthMiddleware(jwtService service.JWTService) gin.HandlerFunc {
 		
 		// 2. Cookie yoksa Header'a bak (Bearer Token)
 		if err != nil {
+			// Debug Log
+			// logger.Info("Cookie bulunamadı, Header kontrol ediliyor...", zap.Error(err))
+			
 			authHeader := c.GetHeader("Authorization")
 			if authHeader == "" {
-				// Token yoksa Login'e yönlendir veya 401 dön
-				// AJAX isteği mi yoksa sayfa isteği mi ayırt edilebilir ama şimdilik Login'e atalım.
+				// Token hiç yok
+				// logger.Warn("🚫 Yetkisiz Giriş: Token yok, Login'e yönlendiriliyor.")
 				c.Redirect(http.StatusFound, "/login")
 				c.Abort()
 				return
@@ -31,6 +35,7 @@ func AuthMiddleware(jwtService service.JWTService) gin.HandlerFunc {
 		// 3. Token'ı Doğrula
 		token, err := jwtService.ValidateToken(tokenString)
 		if err != nil || !token.Valid {
+			// logger.Warn("🚫 Geçersiz Token", zap.Error(err))
 			c.Redirect(http.StatusFound, "/login")
 			c.Abort()
 			return

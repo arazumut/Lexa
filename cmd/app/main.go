@@ -74,7 +74,10 @@ func main() {
 	
 	// Router'ı Kur
 	authHandler := transport.NewAuthHandler(userService)
-	transport.NewRouter(r, authHandler)
+	dashboardHandler := transport.NewDashboardHandler() // Dashboard Handler
+	
+	// Router'a JWT Service ve Handler'ları ver
+	transport.NewRouter(r, jwtService, authHandler, dashboardHandler)
 
 	logger.Info("🚀 Sunucu başlatılıyor...", zap.String("address", ":"+cfg.AppPort))
 	

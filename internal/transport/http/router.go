@@ -1,26 +1,29 @@
 package http
 
 import (
+	"github.com/arazumut/Lexa/internal/service"
+	"github.com/arazumut/Lexa/internal/transport/http/middleware"
 	"github.com/gin-gonic/gin"
 )
 
 // NewRouter, tüm route tanımlarını ve middleware'leri ayarlar.
-func NewRouter(r *gin.Engine, authHandler *AuthHandler) {
-	// Statik Dosyalar ve Template Ayarları main.go'da yapıldı (veya buraya taşınabilir)
-	// Şimdilik route'ları tanımlayalım.
+func NewRouter(r *gin.Engine, jwtService service.JWTService, authHandler *AuthHandler, dashboardHandler *DashboardHandler) {
+	// Statik Route'lar (main.go'da tanımlıydı ama burası daha temiz olurdu, neyse)
 
-	// Herkese açık route'lar
+	// 1. PUBLIC ROUTE'LAR (Herkes Girebilir)
 	public := r.Group("/")
 	{
-		public.GET("/", authHandler.ShowLogin) // Ana sayfa şimdilik Login olsun
 		public.GET("/login", authHandler.ShowLogin)
 		public.POST("/login", authHandler.Login)
 		public.GET("/health", HealthCheck)
+		// Register sayfası ileride eklenebilir
 	}
 
-	// Korumalı route'lar (İleride Middleware eklenecek)
-	// protected := r.Group("/app")
-	// {
-	// 	protected.GET("/dashboard", ...)
-	// }
+	// 2. PROTECTED ROUTE'LAR (Sadece Giriş Yapanlar)
+	protected := r.Group("/")
+	protected.Use(middleware.AuthMiddleware(jwtService)) // 🛡️ Kalkan Devrede!
+	{
+		protected.GET("/", dashboardHandler.Show) // Ana Sayfa artık Dashboard
+		// İleride /clients, /cases gibi yollar buraya gelecek
+	}
 }
