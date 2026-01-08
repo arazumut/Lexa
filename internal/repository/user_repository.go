@@ -24,6 +24,12 @@ func (r *userRepository) Create(user *domain.User) error {
 	return nil
 }
 
+func (r *userRepository) Count() (int64, error) {
+	var count int64
+	err := r.db.Model(&domain.User{}).Count(&count).Error
+	return count, err
+}
+
 func (r *userRepository) GetByEmail(email string) (*domain.User, error) {
 	var user domain.User
 	// "first" kaydı bulamazsa hata döner (RecordNotFound)

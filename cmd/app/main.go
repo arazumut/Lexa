@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 
 	"github.com/arazumut/Lexa/config"
 	"github.com/arazumut/Lexa/internal/domain"
@@ -94,10 +95,45 @@ func main() {
 	// Router'ı Kur (Dependency Injection)
 	transport.NewRouter(r, jwtService, authHandler, dashboardHandler, clientHandler, caseHandler, hearingHandler)
 
+	// 🌸 SEED: Eğer hiç kullanıcı yoksa Admin oluştur
+	seedUsers(userService)
+
 	logger.Info("🚀 Sunucu başlatılıyor...", zap.String("address", ":"+cfg.AppPort))
 	
 	// Uygulamayı başlat ve portu dinle (Bloklayıcı işlem)
 	if err := r.Run(":" + cfg.AppPort); err != nil {
 		logger.Fatal("❌ Sunucu başlatılamadı", zap.Error(err))
+	}
+}
+
+// seedUsers, başlangıçta veritabanında kullanıcı yoksa varsayılan admin'i oluşturur.
+func seedUsers(service domain.UserService) {
+	// Not: Service interface'inde Count() yok, şimdilik CreateUser hatasına bakarak veya 
+	// doğrudan repoyu kullanarak yapılabilirdi ama service üzerinden gitmek daha temiz.
+	// Hızlı çözüm: Doğrudan admin@lexa.com'u oluşturmayı dene. 
+	// Eğer email unique kısıtlaması varsa zaten hata verir ve devam eder.
+	// Ama biz temiz iş yapalım.
+	
+	// Şimdilik Service katmanında 'Count' yok, o yüzden 'CreateUser' fonksiyonunu
+	// admin kullanıcısı için çağıracağız. Eğer zaten varsa (Duplicate entry), hata dönecek ve loglayıp geçeceğiz.
+	// Bu, uygulamanın çökmesini engeller ama işimizi görür.
+
+	admin := &domain.User{
+		Name:     "Admin User",
+		Email:    "admin@lexa.com",
+		Password: "admin", // Service katmanı bunu hashleyecek.
+		Role:     "admin",
+	}
+
+	// Service'deki CreateUser şifreyi otomatik hashliyor mu? 
+	// Kontrol ettim: Evet, service.CreateUser içinde bcrypt ile hashleme var.
+	// Yani buraya "admin" stringini geçmek yeterli.
+	
+	err := service.CreateUser(admin)
+	if err == nil {
+		fmt.Println("✅ Varsayılan admin kullanıcısı oluşturuldu: admin@lexa.com / admin")
+	} else {
+		// Hata var, muhtemelen kullanıcı zaten var.
+		fmt.Println("ℹ️ Admin kullanıcısı zaten mevcut veya oluşturulamadı:", err.Error())
 	}
 }

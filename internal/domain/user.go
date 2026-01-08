@@ -28,5 +28,6 @@ type UserRepository interface {
 // UserService, iş mantığını soyutlar.
 type UserService interface {
 	Register(email, password, name string) error
+	CreateUser(user *User) error
 	Login(email, password string) (string, error)
 }
