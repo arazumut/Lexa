@@ -12,7 +12,8 @@ func NewRouter(
 	jwtService service.JWTService,
 	authHandler *AuthHandler,
 	dashboardHandler *DashboardHandler,
-	clientHandler *ClientHandler, // Yeni eklendi
+	clientHandler *ClientHandler,
+	caseHandler *CaseHandler, // Yeni eklendi
 ) {
 	// 1. PUBLIC ROUTE'LAR (Herkes Girebilir)
 	public := r.Group("/")
@@ -31,11 +32,21 @@ func NewRouter(
 		// Müvekkil İşlemleri
 		protected.GET("/clients", clientHandler.ShowList)
 		protected.GET("/clients/new", clientHandler.ShowCreate)
-		protected.GET("/clients/:id/edit", clientHandler.ShowEdit) // Edit Sayfası
+		protected.GET("/clients/:id/edit", clientHandler.ShowEdit)
 		
 		protected.GET("/api/clients", clientHandler.List)
 		protected.POST("/api/clients", clientHandler.Create)
-		protected.PUT("/api/clients/:id", clientHandler.Update)    // Update API
-		protected.DELETE("/api/clients/:id", clientHandler.Delete) // Delete API
+		protected.PUT("/api/clients/:id", clientHandler.Update)
+		protected.DELETE("/api/clients/:id", clientHandler.Delete)
+
+		// Dava (Case) İşlemleri
+		protected.GET("/cases", caseHandler.ShowList)
+		protected.GET("/cases/new", caseHandler.ShowCreate)
+		protected.GET("/cases/:id/edit", caseHandler.ShowEdit)
+		
+		protected.GET("/api/cases", caseHandler.List)
+		protected.POST("/api/cases", caseHandler.Create)
+		protected.PUT("/api/cases/:id", caseHandler.Update)
+		protected.DELETE("/api/cases/:id", caseHandler.Delete)
 	}
 }

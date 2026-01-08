@@ -1,0 +1,133 @@
+{{ define "content" }}
+<div class="block-header">
+    <div class="row">
+        <div class="col-lg-6 col-md-8 col-sm-12">
+            <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i
+                        class="fa fa-arrow-left"></i></a> Dava Dosyaları</h2>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/"><i class="icon-home"></i></a></li>
+                <li class="breadcrumb-item">Dava Yönetimi</li>
+                <li class="breadcrumb-item active">Dosyalar</li>
+            </ul>
+        </div>
+        <div class="col-lg-6 col-md-4 col-sm-12 text-right">
+            <div class="d-flex flex-row-reverse">
+                <a href="/cases/new" class="btn btn-primary"><i class="fa fa-plus"></i> Yeni Dava Aç</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h2>Dava Listesi <small>Sistemde kayıtlı tüm dava dosyaları</small></h2>
+            </div>
+            <div class="body">
+                <div class="table-responsive">
+                    <table class="table table-hover js-basic-example dataTable table-custom" id="casesTable">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Durum</th>
+                                <th>Dosya No</th>
+                                <th>Müvekkil</th>
+                                <th>Dava Konusu</th>
+                                <th>Mahkeme</th>
+                                <th>Tür</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- DataTables -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ define "scripts" }}
+<!-- JQuery DataTable Css -->
+<link rel="stylesheet" href="/assets/vendor/jquery-datatable/dataTables.bootstrap4.min.css">
+<script src="/assets/bundles/datatablescripts.bundle.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#casesTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": "/api/cases",
+            "order": [[1, "desc"]], // CreatedAt ile sıralama backendde yapılıyor ama burada default sıralama göstergesi için
+            "columns": [
+                {
+                    "data": "status", "render": function (data) {
+                        var statusMap = {
+                            'active': '<span class="badge badge-success">Devam Ediyor</span>',
+                            'decision': '<span class="badge badge-warning">Karar Aşamasında</span>',
+                            'appeal': '<span class="badge badge-info">İstinaf/Temyiz</span>',
+                            'closed': '<span class="badge badge-secondary">Kapandı</span>'
+                        };
+                        return statusMap[data] || '<span class="badge badge-default">' + data + '</span>';
+                    }
+                },
+                {
+                    "data": "file_number", "render": function (data) {
+                        return '<strong>' + data + '</strong>';
+                    }
+                },
+                {
+                    "data": "client.name", "render": function (data) {
+                        // Müvekkil silinmişse null gelebilir
+                        return data ? '<a href="/clients">' + data + '</a>' : '<span class="text-muted">Silinmiş Müvekkil</span>';
+                    }
+                },
+                { "data": "title" },
+                { "data": "court" },
+                {
+                    "data": "type", "render": function (data) {
+                        // Tipleri Türkçeleştir
+                        var typeMap = {
+                            'criminal': 'Ceza',
+                            'civil': 'Hukuk',
+                            'commercial': 'Ticaret',
+                            'administrative': 'İdare',
+                            'labor': 'İş',
+                            'enforcement': 'İcra',
+                            'other': 'Diğer'
+                        };
+                        return typeMap[data] || data;
+                    }
+                },
+                {
+                    "data": "id", "orderable": false, "render": function (data) {
+                        return '<a href="/cases/' + data + '/edit" class="btn btn-sm btn-outline-secondary" title="Düzenle"><i class="fa fa-edit"></i></a>' +
+                            ' <button class="btn btn-sm btn-outline-danger" onclick="deleteCase(' + data + ')" title="Sil"><i class="fa fa-trash-o"></i></button>';
+                    }
+                }
+            ],
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Turkish.json"
+            }
+        });
+    });
+
+    function deleteCase(id) {
+        if (confirm("Bu dava dosyasını silmek istediğinize emin misiniz?")) {
+            $.ajax({
+                url: '/api/cases/' + id,
+                type: 'DELETE',
+                success: function (result) {
+                    toastr.success("Dava dosyası silindi.", "Başarılı");
+                    $('#casesTable').DataTable().ajax.reload();
+                },
+                error: function (xhr) {
+                    toastr.error("Hata: " + (xhr.responseJSON ? xhr.responseJSON.error : "Bilinmeyen hata"), "Hata");
+                }
+            });
+        }
+    }
+</script>
+{{ end }}

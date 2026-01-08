@@ -25,6 +25,7 @@ type Client struct {
 	Phone     string         `gorm:"size:20" json:"phone"`
 	Address   string         `gorm:"type:text" json:"address"`
 	Notes     string         `gorm:"type:text" json:"notes"`
+	Cases     []Case         `gorm:"foreignKey:ClientID" json:"cases,omitempty"` // Bir müvekkilin birden fazla davası olabilir
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`

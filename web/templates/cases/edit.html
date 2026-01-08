@@ -1,0 +1,174 @@
+{{ define "content" }}
+<div class="block-header">
+    <div class="row">
+        <div class="col-lg-6 col-md-8 col-sm-12">
+            <h2><a href="/cases" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a>
+                Dava Düzenle</h2>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/"><i class="icon-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="/cases">Davalar</a></li>
+                <li class="breadcrumb-item active">Düzenle: {{ .case.FileNumber }}</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h2>Dava Bilgilerini Güncelle</h2>
+            </div>
+            <div class="body">
+                <form id="editCaseForm">
+                    <input type="hidden" name="id" value="{{ .case.ID }}">
+
+                    <div class="row clearfix">
+                        <!-- Temel Bilgiler -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Müvekkil <span class="text-danger">*</span></label>
+                                <!-- Müvekkil değişimi genelde yapılmaz ama izin verelim -->
+                                <select class="form-control show-tick" name="client_id" required>
+                                    {{ $currentClientID := .case.ClientID }}
+                                    {{ range .clients }}
+                                    <option value="{{ .ID }}" {{ if eq .ID $currentClientID }}selected{{ end }}>
+                                        {{ .Name }} ({{ .Identity }})
+                                    </option>
+                                    {{ end }}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Dava Konusu / Başlık <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="title" required value="{{ .case.Title }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Dosya / Esas No</label>
+                                <input type="text" class="form-control" name="file_number"
+                                    value="{{ .case.FileNumber }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Mahkeme</label>
+                                <input type="text" class="form-control" name="court" value="{{ .case.Court }}">
+                            </div>
+                        </div>
+
+                        <!-- Detaylar -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Dava Türü</label>
+                                <select class="form-control" name="type">
+                                    <option value="other" {{ if eq .case.Type "other" }}selected{{ end }}>Diğer</option>
+                                    <option value="civil" {{ if eq .case.Type "civil" }}selected{{ end }}>Hukuk</option>
+                                    <option value="commercial" {{ if eq .case.Type "commercial" }}selected{{ end }}>
+                                        Ticaret</option>
+                                    <option value="criminal" {{ if eq .case.Type "criminal" }}selected{{ end }}>Ceza
+                                    </option>
+                                    <option value="labor" {{ if eq .case.Type "labor" }}selected{{ end }}>İş Hukuku
+                                    </option>
+                                    <option value="administrative" {{ if eq .case.Type "administrative" }}selected{{ end
+                                        }}>İdare</option>
+                                    <option value="enforcement" {{ if eq .case.Type "enforcement" }}selected{{ end }}>
+                                        İcra</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Dava Durumu</label>
+                                <select class="form-control" name="status">
+                                    <option value="active" {{ if eq .case.Status "active" }}selected{{ end }}>Devam
+                                        Ediyor</option>
+                                    <option value="decision" {{ if eq .case.Status "decision" }}selected{{ end }}>Karar
+                                        Aşamasında</option>
+                                    <option value="appeal" {{ if eq .case.Status "appeal" }}selected{{ end }}>İstinaf /
+                                        Temyiz</option>
+                                    <option value="closed" {{ if eq .case.Status "closed" }}selected{{ end }}>Kapandı
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Hakim</label>
+                                <input type="text" class="form-control" name="judge" value="{{ .case.Judge }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Dava Tarihi</label>
+                                <!-- Tarih formatını (RFC3339) YYYY-MM-DD formatına çevirmek basit template func olmadığı için zordur.
+                                     Ancak JS ile value atamak daha kolaydır. Input'a ID verelim. -->
+                                <input type="date" class="form-control" name="start_date" id="startDateInput">
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label>Açıklama / Notlar</label>
+                                <textarea class="form-control" rows="4"
+                                    name="description">{{ .case.Description }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <br>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Değişiklikleri
+                        Kaydet</button>
+                    <a href="/cases" class="btn btn-secondary">İptal</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ define "scripts" }}
+<script>
+    $(document).ready(function () {
+        // Backend'den gelen tarihi JS Date objesine çevirip input'a set et
+        var rawDate = "{{ .case.StartDate }}"; // "2024-01-01T00:00:00Z" gibi
+        if (rawDate) {
+            var date = new Date(rawDate);
+            var day = ("0" + date.getDate()).slice(-2);
+            var month = ("0" + (date.getMonth() + 1)).slice(-2);
+            var dateStr = date.getFullYear() + "-" + (month) + "-" + (day);
+            $('#startDateInput').val(dateStr);
+        }
+
+        $('#editCaseForm').on('submit', function (e) {
+            e.preventDefault();
+            var id = $('input[name="id"]').val();
+
+            var FormData = {};
+            $(this).serializeArray().forEach(function (item) {
+                if (item.name === 'client_id') {
+                    FormData[item.name] = parseInt(item.value);
+                } else if (item.name === 'start_date') {
+                    var d = new Date(item.value);
+                    FormData[item.name] = d.toISOString();
+                } else {
+                    FormData[item.name] = item.value;
+                }
+            });
+
+            $.ajax({
+                url: '/api/cases/' + id,
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(FormData),
+                success: function (response) {
+                    toastr.success(response.message, "Başarılı");
+                    setTimeout(function () {
+                        window.location.href = "/cases";
+                    }, 1500);
+                },
+                error: function (xhr) {
+                    var errBox = xhr.responseJSON ? xhr.responseJSON.error : "Hata oluştu";
+                    toastr.error(errBox, "Hata");
+                }
+            });
+        });
+    });
+</script>
+{{ end }}

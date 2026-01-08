@@ -1,0 +1,164 @@
+{{ define "content" }}
+<div class="block-header">
+    <div class="row">
+        <div class="col-lg-6 col-md-8 col-sm-12">
+            <h2><a href="/cases" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a>
+                Yeni Dava Dosyası</h2>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/"><i class="icon-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="/cases">Davalar</a></li>
+                <li class="breadcrumb-item active">Yeni Ekle</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h2>Dava Açılış Formu</h2>
+            </div>
+            <div class="body">
+                <form id="createCaseForm">
+                    <div class="row clearfix">
+                        <!-- Temel Bilgiler -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Müvekkil Seçimi <span class="text-danger">*</span></label>
+                                <select class="form-control show-tick" name="client_id" required>
+                                    <option value="">-- Müvekkil Seçiniz --</option>
+                                    {{ range .clients }}
+                                    <option value="{{ .ID }}">{{ .Name }} ({{ .Identity }})</option>
+                                    {{ end }}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Dava Konusu / Başlık <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="title" required
+                                    placeholder="Örn: X Şirketi Alacak Davası">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Dosya / Esas No</label>
+                                <input type="text" class="form-control" name="file_number"
+                                    placeholder="Örn: 2024/123 E.">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Mahkeme</label>
+                                <input type="text" class="form-control" name="court"
+                                    placeholder="Örn: İstanbul 1. Asliye Hukuk">
+                            </div>
+                        </div>
+
+                        <!-- Detaylar -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Dava Türü</label>
+                                <select class="form-control" name="type">
+                                    <option value="other">Diğer</option>
+                                    <option value="civil">Hukuk (Boşanma, Miras vb.)</option>
+                                    <option value="commercial">Ticaret</option>
+                                    <option value="criminal">Ceza</option>
+                                    <option value="labor">İş Hukuku</option>
+                                    <option value="administrative">İdare / Vergi</option>
+                                    <option value="enforcement">İcra</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Dava Durumu</label>
+                                <select class="form-control" name="status">
+                                    <option value="active" selected>Devam Ediyor</option>
+                                    <option value="decision">Karar Aşamasında</option>
+                                    <option value="appeal">İstinaf / Temyiz</option>
+                                    <option value="closed">Kapandı</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Hakim (Opsiyonel)</label>
+                                <input type="text" class="form-control" name="judge" placeholder="Hakim Adı Soyadı">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Dava Tarihi</label>
+                                <input type="date" class="form-control" name="start_date">
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label>Açıklama / Notlar</label>
+                                <textarea class="form-control" rows="4" name="description"
+                                    placeholder="Dava ile ilgili detaylı açıklamalar..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <br>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Dava Dosyasını
+                        Oluştur</button>
+                    <a href="/cases" class="btn btn-secondary">İptal</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ define "scripts" }}
+<script>
+    $(document).ready(function () {
+        // Bugünün tarihini varsayılan yap
+        var now = new Date();
+        var day = ("0" + now.getDate()).slice(-2);
+        var month = ("0" + (now.getMonth() + 1)).slice(-2);
+        var today = now.getFullYear() + "-" + (month) + "-" + (day);
+        $('input[name="start_date"]').val(today);
+
+        $('#createCaseForm').on('submit', function (e) {
+            e.preventDefault();
+
+            var FormData = {};
+            $(this).serializeArray().forEach(function (item) {
+                // client_id sayı olmalı
+                if (item.name === 'client_id') {
+                    FormData[item.name] = parseInt(item.value);
+                } else if (item.name === 'start_date') {
+                    // Tarihi ISO formatına çevir (Go time.Time için)
+                    // time.Time JSON unmasrshal RFC3339 bekler: "2024-01-01T00:00:00Z"
+                    // Ancak HTML date input sadece "YYYY-MM-DD" verir.
+                    // Backendde string parse yapmak daha güvenli olabilir ama
+                    // Go time.Time UnmarshalJSON metodu RFC3339 standardını bekler.
+                    // Basitlik için backendde bind ederken string olarak almadık, direkt struct bind ediyoruz.
+                    // O yüzden burayı RFC3339 formatına zorlamalıyız.
+                    var d = new Date(item.value);
+                    FormData[item.name] = d.toISOString();
+                } else {
+                    FormData[item.name] = item.value;
+                }
+            });
+
+            $.ajax({
+                url: '/api/cases',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(FormData),
+                success: function (response) {
+                    toastr.success(response.message, "Başarılı");
+                    setTimeout(function () {
+                        window.location.href = "/cases";
+                    }, 1500);
+                },
+                error: function (xhr) {
+                    var errBox = xhr.responseJSON ? xhr.responseJSON.error : "Hata oluştu";
+                    toastr.error(errBox, "Hata");
+                }
+            });
+        });
+    });
+</script>
+{{ end }}

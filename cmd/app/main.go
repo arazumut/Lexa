@@ -3,6 +3,7 @@ package main
 import (
 
 	"github.com/arazumut/Lexa/config"
+	"github.com/arazumut/Lexa/internal/domain"
 	"github.com/arazumut/Lexa/internal/repository"
 	"github.com/arazumut/Lexa/internal/service"
 	transport "github.com/arazumut/Lexa/internal/transport/http" // Alias ile packet adı çakışmasını önle
@@ -31,6 +32,10 @@ func main() {
 	if err != nil {
 		logger.Fatal("❌ Veritabanı hatası", zap.Error(err))
 	}
+
+	// 🛠 DATABASE MIGRATION (Tablo Oluşturma)
+	// Eksik tablolaları otomatik oluşturur.
+	db.AutoMigrate(&domain.User{}, &domain.Client{}, &domain.Case{}) // Case tablosunu ekledik
 	
 	// GORM'un kendi connection pool yönetimi var ama kapatmak istersek underlying SQL DB'ye erişiriz.
 	// main fonksiyonu bitince connection pool da kapanır.
@@ -43,7 +48,8 @@ func main() {
 	
 	// 1. Repository (Veri Kaynağı)
 	userRepo := repository.NewUserRepository(db)
-	clientRepo := repository.NewClientRepository(db) // YENİ: Müvekkil Repository
+	clientRepo := repository.NewClientRepository(db)
+	caseRepo := repository.NewCaseRepository(db) // YENİ: Case Repository
 	
 	// 2. Service (İş Mantığı)
 	// JWT Secret'ı .env'den almalıydık ama şimdilik hardcoded. PROD'da bunu düzeltmeliyiz!
@@ -51,7 +57,8 @@ func main() {
 	jwtService := service.NewJWTService(jwtSecret, "lexa-app", 24) // 24 Saat geçerli
 	
 	userService := service.NewUserService(userRepo, jwtService)
-	clientService := service.NewClientService(clientRepo) // YENİ: Müvekkil Servisi
+	clientService := service.NewClientService(clientRepo)
+	caseService := service.NewCaseService(caseRepo, clientRepo) // YENİ: Case Service (ClientRepo gerekli)
 
 	// ---------------------------------------------------------
 	// ---------------------------------------------------------
@@ -73,11 +80,13 @@ func main() {
 	// Handler'ları Hazırla
 	authHandler := transport.NewAuthHandler(userService)
 	dashboardHandler := transport.NewDashboardHandler() 
-	clientHandler := transport.NewClientHandler(clientService) // YENİ: Müvekkil Handler
+	clientHandler := transport.NewClientHandler(clientService)
+
+	// CaseHandler, dropdown doldurmak için ClientService'e de ihtiyaç duyar
+	caseHandler := transport.NewCaseHandler(caseService, clientService) // YENİ: Case Handler
 	
 	// Router'ı Kur (Dependency Injection)
-	// Yeni imzaya uygun olarak clientHandler'ı ekledik.
-	transport.NewRouter(r, jwtService, authHandler, dashboardHandler, clientHandler)
+	transport.NewRouter(r, jwtService, authHandler, dashboardHandler, clientHandler, caseHandler)
 
 	logger.Info("🚀 Sunucu başlatılıyor...", zap.String("address", ":"+cfg.AppPort))
 	
