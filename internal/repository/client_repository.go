@@ -36,35 +36,39 @@ func (r *clientRepository) FindByID(id uint) (*domain.Client, error) {
 	return &client, nil
 }
 
-func (r *clientRepository) FindAll(page, pageSize int, search string) ([]domain.Client, int64, error) {
+func (r *clientRepository) FindAll(page, pageSize int, search string) ([]domain.Client, int64, int64, error) {
 	var clients []domain.Client
 	var totalCount int64
+	var filteredCount int64
+
+	// 1. Önce veritabanındaki TOPLAM kayıt sayısını al (Filtresiz)
+	// Bu, DataTables'ın "toplam X kayıt" diyebilmesi için şart.
+	if err := r.db.Model(&domain.Client{}).Count(&totalCount).Error; err != nil {
+		return nil, 0, 0, err
+	}
 
 	// Base Query
 	query := r.db.Model(&domain.Client{})
 
-	// Arama Filtresi (Search)
-	// İsimde veya Kimlik Numarasında arama yapar.
+	// 2. Arama Filtresi (Search)
 	if search != "" {
-		// SQLite LIKE işlemi varsayılan olarak case-insensitive'dir ancak garantiye almak için LOWER kullanılabilir.
-		// Ancak performans için direkt LIKE kullanıyoruz, GORM bunu halleder.
 		searchTerm := "%" + search + "%"
 		query = query.Where("name LIKE ? OR identity LIKE ?", searchTerm, searchTerm)
 	}
 
-	// 1. Toplam Kayıt Sayısını Hesapla (Sayfalama için gerekli)
-	if err := query.Count(&totalCount).Error; err != nil {
-		return nil, 0, err
+	// 3. Filtrelenmiş Kayıt Sayısını Hesapla
+	if err := query.Count(&filteredCount).Error; err != nil {
+		return nil, 0, 0, err
 	}
 
-	// 2. Veriyi Çek (Pagination)
+	// 4. Veriyi Çek (Pagination)
 	offset := (page - 1) * pageSize
 	
 	// En son eklenenler en üstte görünsün.
 	err := query.Order("created_at desc").Offset(offset).Limit(pageSize).Find(&clients).Error
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, 0, err
 	}
 
-	return clients, totalCount, nil
+	return clients, totalCount, filteredCount, nil
 }

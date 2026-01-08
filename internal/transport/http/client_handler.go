@@ -52,7 +52,7 @@ func (h *ClientHandler) List(c *gin.Context) {
 	// Start -> Page Dönüşümü
 	page := (start / pageSize) + 1
 
-	clients, total, err := h.service.ListClients(page, pageSize, search)
+	clients, total, filtered, err := h.service.ListClients(page, pageSize, search)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Veriler çekilemedi"})
 		return
@@ -61,8 +61,8 @@ func (h *ClientHandler) List(c *gin.Context) {
 	// DataTables Beklenen JSON Formatı
 	c.JSON(http.StatusOK, gin.H{
 		"draw":            c.Query("draw"), 
-		"recordsTotal":    total, // Filtresiz toplam sayıyı da buraya verebiliriz aslında ama şimdilik aynı
-		"recordsFiltered": total, // Filtrelenmiş toplam sayı
+		"recordsTotal":    total,    // DB'deki toplam kayıt sayısı
+		"recordsFiltered": filtered, // Arama sonrası eşleşen kayıt sayısı
 		"data":            clients,
 	})
 }
@@ -86,5 +86,66 @@ func (h *ClientHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Müvekkil başarıyla oluşturuldu",
 		"id":      client.ID,
+	})
+}
+
+// ShowEdit - Müvekkil düzenleme sayfasını render eder.
+func (h *ClientHandler) ShowEdit(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	
+	client, err := h.service.GetClient(uint(id))
+	if err != nil {
+		// Müvekkil bulunamazsa listeye yönlendir
+		// İdealde 404 sayfası gösterilebilir ama şimdilik redirect daha yumuşak bir geçiş.
+		c.Redirect(http.StatusFound, "/clients") 
+		return
+	}
+	
+	email, _ := c.Get("email")
+
+	c.HTML(http.StatusOK, "clients/edit.html", gin.H{
+		"title": "Müvekkil Düzenle - LEXA",
+		"email": email,
+		"client": client, // Mevcut veriyi template'e gönder
+	})
+}
+
+// Update - Müvekkil bilgilerini günceller (API Endpoint).
+func (h *ClientHandler) Update(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	
+	var client domain.Client
+	
+	// JSON verisini struct'a bind et
+	if err := c.ShouldBindJSON(&client); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz veri formatı"})
+		return
+	}
+	
+	// URL'den gelen ID'yi güvenli bir şekilde struct'a ata.
+	// Kullanıcının JSON body içinde manipüle etmesini engelleriz.
+	client.ID = uint(id)
+	
+	if err := h.service.UpdateClient(&client); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Güncelleme başarısız: " + err.Error()})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Müvekkil başarıyla güncellendi",
+	})
+}
+
+// Delete - Müvekkili siler (API Endpoint).
+func (h *ClientHandler) Delete(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	
+	if err := h.service.DeleteClient(uint(id)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Silme işlemi başarısız: " + err.Error()})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Müvekkil başarıyla silindi",
 	})
 }

@@ -82,7 +82,7 @@
                 { "data": "email" },
                 {
                     "data": "id", "orderable": false, "render": function (data) {
-                        return '<button class="btn btn-sm btn-outline-secondary" onclick="editClient(' + data + ')" title="Düzenle"><i class="fa fa-edit"></i></button>' +
+                        return '<a href="/clients/' + data + '/edit" class="btn btn-sm btn-outline-secondary" title="Düzenle"><i class="fa fa-edit"></i></a>' +
                             ' <button class="btn btn-sm btn-outline-danger" onclick="deleteClient(' + data + ')" title="Sil"><i class="fa fa-trash-o"></i></button>';
                     }
                 }
@@ -93,12 +93,21 @@
         });
     });
 
-    function editClient(id) {
-        alert("Düzenleme özelliği yakında: " + id);
-    }
-
     function deleteClient(id) {
-        alert("Silme özelliği yakında: " + id);
+        if (confirm("Bu müvekkili silmek istediğinize emin misiniz? Bu işlem geri alınamaz!")) {
+            $.ajax({
+                url: '/api/clients/' + id,
+                type: 'DELETE',
+                success: function (result) {
+                    toastr.success("Müvekkil başarıyla silindi.", "Başarılı");
+                    // Tabloyu yenile
+                    $('#clientsTable').DataTable().ajax.reload();
+                },
+                error: function (xhr) {
+                    toastr.error("Silme işlemi başarısız: " + (xhr.responseJSON ? xhr.responseJSON.error : "Bilinmeyen hata"), "Hata");
+                }
+            });
+        }
     }
 </script>
 {{ end }}

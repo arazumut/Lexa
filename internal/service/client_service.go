@@ -51,7 +51,7 @@ func (s *clientService) GetClient(id uint) (*domain.Client, error) {
 	return s.repo.FindByID(id)
 }
 
-func (s *clientService) ListClients(page, pageSize int, search string) ([]domain.Client, int64, error) {
+func (s *clientService) ListClients(page, pageSize int, search string) ([]domain.Client, int64, int64, error) {
 	// Sayfalama parametrelerini normalize et
 	if page < 1 {
 		page = 1

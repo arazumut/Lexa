@@ -37,8 +37,8 @@ type ClientRepository interface {
 	Delete(id uint) error
 	FindByID(id uint) (*Client, error)
 	// FindAll fonksiyonu sayfalama (pagination) ve arama (search) desteği ile döner.
-	// returns: results, totalCount, error
-	FindAll(page, pageSize int, search string) ([]Client, int64, error)
+	// returns: results, totalCount, filteredCount, error
+	FindAll(page, pageSize int, search string) ([]Client, int64, int64, error)
 }
 
 // ClientService, iş mantığını soyutlar (Port).
@@ -47,5 +47,5 @@ type ClientService interface {
 	UpdateClient(client *Client) error
 	DeleteClient(id uint) error
 	GetClient(id uint) (*Client, error)
-	ListClients(page, pageSize int, search string) ([]Client, int64, error)
+	ListClients(page, pageSize int, search string) ([]Client, int64, int64, error)
 }

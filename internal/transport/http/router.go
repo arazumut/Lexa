@@ -31,7 +31,11 @@ func NewRouter(
 		// Müvekkil İşlemleri
 		protected.GET("/clients", clientHandler.ShowList)
 		protected.GET("/clients/new", clientHandler.ShowCreate)
+		protected.GET("/clients/:id/edit", clientHandler.ShowEdit) // Edit Sayfası
+		
 		protected.GET("/api/clients", clientHandler.List)
 		protected.POST("/api/clients", clientHandler.Create)
+		protected.PUT("/api/clients/:id", clientHandler.Update)    // Update API
+		protected.DELETE("/api/clients/:id", clientHandler.Delete) // Delete API
 	}
 }
