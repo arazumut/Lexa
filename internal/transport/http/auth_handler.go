@@ -20,7 +20,7 @@ func NewAuthHandler(s domain.UserService) *AuthHandler {
 
 // ShowLogin, giriş sayfasını (HTML) render eder.
 func (h *AuthHandler) ShowLogin(c *gin.Context) {
-	c.HTML(200, "login.html", gin.H{
+	c.HTML(200, "auth/login.html", gin.H{
 		"title": "Giriş Yap - LEXA",
 	})
 }
@@ -33,7 +33,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	token, err := h.service.Login(email, password)
 	if err != nil {
 		logger.Error("Giriş başarısız", zap.String("email", email), zap.Error(err))
-		c.HTML(200, "login.html", gin.H{
+		c.HTML(200, "auth/login.html", gin.H{
 			"error": "E-posta veya şifre hatalı!",
 			"email": email, // Hatalı girişte email silinmesin
 		})

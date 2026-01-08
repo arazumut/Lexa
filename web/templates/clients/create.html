@@ -1,0 +1,148 @@
+{{ define "content" }}
+<div class="block-header">
+    <div class="row">
+        <div class="col-lg-6 col-md-8 col-sm-12">
+            <h2><a href="/clients" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a>
+                Yeni Müvekkil</h2>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/"><i class="icon-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="/clients">Müvekkiller</a></li>
+                <li class="breadcrumb-item active">Yeni Ekle</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h2>Müvekkil Bilgileri Formu</h2>
+            </div>
+            <div class="body">
+                <form id="createClientForm">
+                    <div class="row clearfix">
+                        <!-- Sol Kolon: Kimlik Bilgileri -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Müvekkil Tipi</label>
+                                <br>
+                                <label class="fancy-radio">
+                                    <input type="radio" name="type" value="individual" required checked
+                                        data-parsley-errors-container="#error-radio">
+                                    <span><i></i>Bireysel</span>
+                                </label>
+                                <label class="fancy-radio">
+                                    <input type="radio" name="type" value="corporate">
+                                    <span><i></i>Kurumsal</span>
+                                </label>
+                                <p id="error-radio"></p>
+                            </div>
+
+                            <div class="form-group">
+                                <label id="labelName">Ad Soyad</label>
+                                <input type="text" class="form-control" name="name" required
+                                    placeholder="Örn: Ahmet Yılmaz">
+                            </div>
+
+                            <div class="form-group">
+                                <label id="labelIdentity">TC Kimlik No</label>
+                                <input type="text" class="form-control" name="identity"
+                                    placeholder="11 haneli kimlik no">
+                            </div>
+                        </div>
+
+                        <!-- Sağ Kolon: İletişim Bilgileri -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>E-Posta Adresi</label>
+                                <input type="email" class="form-control" name="email" placeholder="ornek@email.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Telefon Numarası</label>
+                                <input type="text" class="form-control" name="phone" placeholder="05XX XXX XX XX">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Adres</label>
+                                <textarea class="form-control" rows="3" name="address"
+                                    placeholder="Açık adres..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label>Notlar</label>
+                                <textarea class="form-control" rows="2" name="notes"
+                                    placeholder="Müvekkil hakkında özel notlar..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <br>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Kaydet</button>
+                    <a href="/clients" class="btn btn-secondary">İptal</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ define "scripts" }}
+<!-- Toastr ve Jquery zaten base.html de yüklü -->
+<script>
+    $(document).ready(function () {
+        // Tip Değişikliği Algılama
+        $('input[type=radio][name=type]').change(function () {
+            if (this.value == 'corporate') {
+                $('#labelName').text('Şirket / Kurum Ünvanı');
+                $('#labelName').parent().find('input').attr('placeholder', 'Örn: ARZ Hukuk A.Ş.');
+                $('#labelIdentity').text('Vergi Numarası');
+                $('#labelIdentity').parent().find('input').attr('placeholder', '10 haneli vergi no');
+            } else {
+                $('#labelName').text('Ad Soyad');
+                $('#labelName').parent().find('input').attr('placeholder', 'Örn: Ahmet Yılmaz');
+                $('#labelIdentity').text('TC Kimlik No');
+                $('#labelIdentity').parent().find('input').attr('placeholder', '11 haneli kimlik no');
+            }
+        });
+
+        // Form Submit
+        $('#createClientForm').on('submit', function (e) {
+            e.preventDefault();
+
+            // Form verisini JSON'a çevir
+            var formData = {};
+            $(this).serializeArray().forEach(function (item) {
+                formData[item.name] = item.value;
+            });
+
+            // AJAX Request
+            $.ajax({
+                url: '/api/clients', // POST Endpoint
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function (response) {
+                    toastr.success(response.message, "Başarılı");
+                    // 1.5 saniye sonra listeye dön
+                    setTimeout(function () {
+                        window.location.href = "/clients";
+                    }, 1500);
+                },
+                error: function (xhr) {
+                    var errBox = "";
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errBox = xhr.responseJSON.error;
+                    } else {
+                        errBox = "Beklenmedik bir hata oluştu.";
+                    }
+                    toastr.error(errBox, "Hata");
+                }
+            });
+        });
+    });
+</script>
+{{ end }}

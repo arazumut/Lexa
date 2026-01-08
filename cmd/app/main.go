@@ -43,6 +43,7 @@ func main() {
 	
 	// 1. Repository (Veri Kaynağı)
 	userRepo := repository.NewUserRepository(db)
+	clientRepo := repository.NewClientRepository(db) // YENİ: Müvekkil Repository
 	
 	// 2. Service (İş Mantığı)
 	// JWT Secret'ı .env'den almalıydık ama şimdilik hardcoded. PROD'da bunu düzeltmeliyiz!
@@ -50,6 +51,7 @@ func main() {
 	jwtService := service.NewJWTService(jwtSecret, "lexa-app", 24) // 24 Saat geçerli
 	
 	userService := service.NewUserService(userRepo, jwtService)
+	clientService := service.NewClientService(clientRepo) // YENİ: Müvekkil Servisi
 
 	// ---------------------------------------------------------
 	// ---------------------------------------------------------
@@ -64,20 +66,18 @@ func main() {
 	r := gin.Default()
 
 	// Front-end Ayarları
-	r.LoadHTMLGlob("web/templates/**/*")
+	// custom renderer'ı kullan
+	r.HTMLRender = transport.NewRenderer()
 	r.Static("/assets", "./web/static/assets")
 
 	// Handler'ları Hazırla
-	// Not: Burada 'userService' değişkenini kullanıyoruz (önceden _ idi)
-	// Eğer userService'i daha önce tanımladıysan onu kullan, yoksa burada tekrar tanımlama.
-	// Yukarıdaki kodda "_ = ..." yapmıştık, onu düzeltmemiz lazım.
-	
-	// Router'ı Kur
 	authHandler := transport.NewAuthHandler(userService)
-	dashboardHandler := transport.NewDashboardHandler() // Dashboard Handler
+	dashboardHandler := transport.NewDashboardHandler() 
+	clientHandler := transport.NewClientHandler(clientService) // YENİ: Müvekkil Handler
 	
-	// Router'a JWT Service ve Handler'ları ver
-	transport.NewRouter(r, jwtService, authHandler, dashboardHandler)
+	// Router'ı Kur (Dependency Injection)
+	// Yeni imzaya uygun olarak clientHandler'ı ekledik.
+	transport.NewRouter(r, jwtService, authHandler, dashboardHandler, clientHandler)
 
 	logger.Info("🚀 Sunucu başlatılıyor...", zap.String("address", ":"+cfg.AppPort))
 	

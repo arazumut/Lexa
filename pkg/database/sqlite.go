@@ -35,7 +35,7 @@ func NewSQLiteDB(dbPath string) (*gorm.DB, error) {
 	// User modelini veritabanına yansıtır.
 	// Yeni modeller eklendikçe buraya eklenecek.
 	log.Println("📦 Auto-Migration çalıştırılıyor...")
-	if err := db.AutoMigrate(&domain.User{}); err != nil {
+	if err := db.AutoMigrate(&domain.User{}, &domain.Client{}); err != nil {
 		return nil, err
 	}
 	log.Println("✅ Auto-Migration tamamlandı.")

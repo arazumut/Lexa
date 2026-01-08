@@ -15,7 +15,7 @@ func (h *DashboardHandler) Show(c *gin.Context) {
 	email, _ := c.Get("email")     // Claims'e email eklemiştik? Bakalım jwt_service.go'ya.
 	role, _ := c.Get("role")
 
-	c.HTML(200, "dashboard.html", gin.H{
+	c.HTML(200, "dashboard/dashboard.html", gin.H{
 		"title": "Ana Sayfa - LEXA",
 		"email": email,
 		"role":  role,

@@ -1,0 +1,104 @@
+{{ define "content" }}
+<div class="block-header">
+    <div class="row">
+        <div class="col-lg-6 col-md-8 col-sm-12">
+            <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i
+                        class="fa fa-arrow-left"></i></a> Müvekkiller</h2>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/"><i class="icon-home"></i></a></li>
+                <li class="breadcrumb-item">Müvekkiller</li>
+                <li class="breadcrumb-item active">Listele</li>
+            </ul>
+        </div>
+        <div class="col-lg-6 col-md-4 col-sm-12 text-right">
+            <div class="d-flex flex-row-reverse">
+                <a href="/clients/new" class="btn btn-primary"><i class="fa fa-plus"></i> Yeni Müvekkil Ekle</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h2>Müvekkil Listesi <small>Kayıtlı tüm bireysel ve kurumsal müvekkiller</small></h2>
+            </div>
+            <div class="body">
+                <div class="table-responsive">
+                    <table class="table table-hover js-basic-example dataTable table-custom" id="clientsTable">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Tip</th>
+                                <th>Ad Soyad / Ünvan</th>
+                                <th>TC / Vergi No</th>
+                                <th>Telefon</th>
+                                <th>E-Posta</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- DataTables AJAX ile dolduracak -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ define "scripts" }}
+<!-- JQuery DataTable Css -->
+<link rel="stylesheet" href="/assets/vendor/jquery-datatable/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/assets/vendor/jquery-datatable/fixedeader/dataTables.fixedcolumns.bootstrap4.min.css">
+<link rel="stylesheet" href="/assets/vendor/jquery-datatable/fixedeader/dataTables.fixedheader.bootstrap4.min.css">
+
+<!-- DataTables JS bundles -->
+<script src="/assets/bundles/datatablescripts.bundle.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#clientsTable').DataTable({
+            "processing": true,
+            "serverSide": true, // Sunucu Taraflı İşleme
+            "ajax": "/api/clients", // JSON Endpoint
+            "columns": [
+                {
+                    "data": "type", "render": function (data) {
+                        if (data === 'corporate') {
+                            return '<span class="badge badge-info"><i class="fa fa-building"></i> Kurumsal</span>';
+                        }
+                        return '<span class="badge badge-success"><i class="fa fa-user"></i> Bireysel</span>';
+                    }
+                },
+                {
+                    "data": "name", "render": function (data, type, row) {
+                        return '<strong>' + data + '</strong>';
+                    }
+                },
+                { "data": "identity" },
+                { "data": "phone" },
+                { "data": "email" },
+                {
+                    "data": "id", "orderable": false, "render": function (data) {
+                        return '<button class="btn btn-sm btn-outline-secondary" onclick="editClient(' + data + ')" title="Düzenle"><i class="fa fa-edit"></i></button>' +
+                            ' <button class="btn btn-sm btn-outline-danger" onclick="deleteClient(' + data + ')" title="Sil"><i class="fa fa-trash-o"></i></button>';
+                    }
+                }
+            ],
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Turkish.json"
+            }
+        });
+    });
+
+    function editClient(id) {
+        alert("Düzenleme özelliği yakında: " + id);
+    }
+
+    function deleteClient(id) {
+        alert("Silme özelliği yakında: " + id);
+    }
+</script>
+{{ end }}
