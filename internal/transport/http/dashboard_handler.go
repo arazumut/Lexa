@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/arazumut/Lexa/internal/domain"
@@ -8,20 +9,23 @@ import (
 )
 
 type DashboardHandler struct {
-	clientService  domain.ClientService
-	caseService    domain.CaseService
-	hearingService domain.HearingService
+	clientService      domain.ClientService
+	caseService        domain.CaseService
+	hearingService     domain.HearingService
+	transactionService domain.TransactionService
 }
 
 func NewDashboardHandler(
 	clientService domain.ClientService,
 	caseService domain.CaseService,
 	hearingService domain.HearingService,
+	transactionService domain.TransactionService,
 ) *DashboardHandler {
 	return &DashboardHandler{
-		clientService:  clientService,
-		caseService:    caseService,
-		hearingService: hearingService,
+		clientService:      clientService,
+		caseService:        caseService,
+		hearingService:     hearingService,
+		transactionService: transactionService,
 	}
 }
 
@@ -31,15 +35,18 @@ func (h *DashboardHandler) Show(c *gin.Context) {
 
 	// 1. İstatistikleri Çek
 	totalClients, _ := h.clientService.GetTotalCount()
-	caseStats, _ := h.caseService.GetCaseStatistics() // map[string]int64 döner
+	caseStats, _ := h.caseService.GetCaseStatistics()
 	upcomingHearings, _ := h.hearingService.GetUpcomingHearings(5)
+	
+	// Finansal Veriler (Bakiye ve Grafik)
+	balance, monthlyStats, _ := h.transactionService.GetDashboardFinancials()
 
 	// Basit hesaplamalar
 	activeCases := caseStats["active"]
-	closedCases := caseStats["closed"] // İhtiyaç olursa
+	closedCases := caseStats["closed"]
 	
-	// Toplam Tahsilat şu an mock, ileride Accounting modülü ile gerçek olacak
-	totalRevenue := "0₺"
+	// Para Formatı (Basit)
+	totalRevenue := fmt.Sprintf("%.2f₺", balance)
 
 	c.HTML(http.StatusOK, "dashboard/dashboard.html", gin.H{
 		"title":            "Ana Sayfa - LEXA",
@@ -49,6 +56,7 @@ func (h *DashboardHandler) Show(c *gin.Context) {
 		"activeCases":      activeCases,
 		"closedCases":      closedCases,
 		"totalRevenue":     totalRevenue,
-		"upcomingHearings": upcomingHearings, // Template de range ile dönülecek
+		"upcomingHearings": upcomingHearings,
+		"monthlyStats":     monthlyStats, // Grafik için (JS tarafında json olarak kullanılacak)
 	})
 }

@@ -35,7 +35,7 @@ func main() {
 
 	// 🛠 DATABASE MIGRATION (Tablo Oluşturma)
 	// Eksik tablolaları otomatik oluşturur.
-	db.AutoMigrate(&domain.User{}, &domain.Client{}, &domain.Case{}, &domain.Hearing{}) // Hearing tablosunu ekledik
+	db.AutoMigrate(&domain.User{}, &domain.Client{}, &domain.Case{}, &domain.Hearing{}, &domain.Transaction{}) // Transaction eklendi
 	
 	// GORM'un kendi connection pool yönetimi var ama kapatmak istersek underlying SQL DB'ye erişiriz.
 	// main fonksiyonu bitince connection pool da kapanır.
@@ -50,7 +50,8 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	clientRepo := repository.NewClientRepository(db)
 	caseRepo := repository.NewCaseRepository(db)
-	hearingRepo := repository.NewHearingRepository(db) // YENİ
+	hearingRepo := repository.NewHearingRepository(db)
+	transactionRepo := repository.NewTransactionRepository(db) // YENİ
 	
 	// 2. Service (İş Mantığı)
 	jwtSecret := "super-secret-key-change-me" 
@@ -59,7 +60,8 @@ func main() {
 	userService := service.NewUserService(userRepo, jwtService)
 	clientService := service.NewClientService(clientRepo)
 	caseService := service.NewCaseService(caseRepo, clientRepo)
-	hearingService := service.NewHearingService(hearingRepo, caseRepo) // YENİ (CaseRepo'ya ihtiyacı var)
+	hearingService := service.NewHearingService(hearingRepo, caseRepo)
+	transactionService := service.NewTransactionService(transactionRepo) // YENİ
 
 	// ---------------------------------------------------------
 	// ---------------------------------------------------------
@@ -80,14 +82,14 @@ func main() {
 
 	// Handler'ları Hazırla
 	authHandler := transport.NewAuthHandler(userService)
-	dashboardHandler := transport.NewDashboardHandler(clientService, caseService, hearingService) 
+	dashboardHandler := transport.NewDashboardHandler(clientService, caseService, hearingService, transactionService) // YENİ: TransactionService
 	clientHandler := transport.NewClientHandler(clientService)
 
 	// CaseHandler, dropdown doldurmak için ClientService'e de ihtiyaç duyar
 	caseHandler := transport.NewCaseHandler(caseService, clientService)
 	
 	// Hearing Handler (CaseService' e de ihtiyacı var dropdown için)
-	hearingHandler := transport.NewHearingHandler(hearingService, caseService) // YENİ
+	hearingHandler := transport.NewHearingHandler(hearingService, caseService)
 
 	// Router'ı Kur (Dependency Injection)
 	transport.NewRouter(r, jwtService, authHandler, dashboardHandler, clientHandler, caseHandler, hearingHandler)
