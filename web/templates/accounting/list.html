@@ -1,0 +1,132 @@
+{{ define "content" }}
+<div class="block-header">
+    <div class="row">
+        <div class="col-lg-6 col-md-8 col-sm-12">
+            <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i
+                        class="fa fa-arrow-left"></i></a> Muhasebe</h2>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/"><i class="icon-home"></i></a></li>
+                <li class="breadcrumb-item active">Finansal Hareketler</li>
+            </ul>
+        </div>
+        <div class="col-lg-6 col-md-4 col-sm-12 text-right">
+            <div class="d-flex flex-row-reverse align-items-center">
+                <a href="/accounting/new?type=income" class="btn btn-success ml-2"><i class="fa fa-plus"></i> Gelir
+                    Ekle</a>
+                <a href="/accounting/new?type=expense" class="btn btn-danger"><i class="fa fa-minus"></i> Gider Ekle</a>
+
+                <div class="mr-3 text-right">
+                    <small>Toplam Kasa</small>
+                    <h5 class="m-0 text-primary">{{ .balance }}</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h2>Hareket Dökümü</h2>
+            </div>
+            <div class="body">
+                <div class="table-responsive">
+                    <table class="table table-hover js-basic-example dataTable table-custom" id="trxTable">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Tür</th>
+                                <th>Kategori</th>
+                                <th>Açıklama</th>
+                                <th>Tutar</th>
+                                <th>Müvekkil / Dava</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- DataTables -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ define "scripts" }}
+<link rel="stylesheet" href="/assets/vendor/jquery-datatable/dataTables.bootstrap4.min.css">
+<script src="/assets/bundles/datatablescripts.bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#trxTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": "/api/accounting",
+            "order": [[0, "desc"]],
+            "columns": [
+                {
+                    "data": "date", "render": function (data) {
+                        return moment(data).format('DD.MM.YYYY');
+                    }
+                },
+                {
+                    "data": "type", "render": function (data) {
+                        if (data === 'income') return '<span class="badge badge-success">GELİR</span>';
+                        return '<span class="badge badge-danger">GİDER</span>';
+                    }
+                },
+                { "data": "category" },
+                { "data": "description" },
+                {
+                    "data": "amount", "render": function (data, type, row) {
+                        // Tutar formatlama
+                        var val = parseFloat(data).toFixed(2) + '₺';
+                        if (row.type === 'expense') return '<span class="text-danger">-' + val + '</span>';
+                        return '<span class="text-success">+' + val + '</span>';
+                    }
+                },
+                {
+                    "data": "id", "render": function (data, type, row) {
+                        var html = '';
+                        if (row.client) html += '<small><i class="fa fa-user"></i> ' + row.client.name + '</small><br>';
+                        if (row.case) html += '<small><i class="fa fa-folder"></i> ' + row.case.file_number + '</small>';
+                        if (!html) html = '-';
+                        return html;
+                    }
+                },
+                {
+                    "data": "id", "orderable": false, "render": function (data) {
+                        return '<button class="btn btn-sm btn-outline-danger" onclick="deleteTrx(' + data + ')" title="Sil"><i class="fa fa-trash-o"></i></button>';
+                    }
+                }
+            ],
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Turkish.json"
+            }
+        });
+    });
+
+    function deleteTrx(id) {
+        if (confirm("Bu işlemi silmek kasanızı etkileyecektir. Emin misiniz?")) {
+            $.ajax({
+                url: '/api/accounting/' + id,
+                type: 'DELETE',
+                success: function (result) {
+                    toastr.success("İşlem silindi.", "Başarılı");
+                    $('#trxTable').DataTable().ajax.reload();
+                    // Bakiyeyi güncellemek için sayfayı yenilemek gerekebilir veya AJAX ile çekmek.
+                    // Şimdilik reload yeterli.
+                    setTimeout(function () { location.reload(); }, 1000);
+                },
+                error: function (xhr) {
+                    toastr.error("Hata oluştu", "Hata");
+                }
+            });
+        }
+    }
+</script>
+{{ end }}

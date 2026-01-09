@@ -91,9 +91,12 @@ func main() {
 	
 	// Hearing Handler (CaseService' e de ihtiyacı var dropdown için)
 	hearingHandler := transport.NewHearingHandler(hearingService, caseService)
+	
+	// Transaction Handler (ClientService ve CaseService dropdown için)
+	transactionHandler := transport.NewTransactionHandler(transactionService, clientService, caseService)
 
 	// Router'ı Kur (Dependency Injection)
-	transport.NewRouter(r, jwtService, authHandler, dashboardHandler, clientHandler, caseHandler, hearingHandler)
+	transport.NewRouter(r, jwtService, authHandler, dashboardHandler, clientHandler, caseHandler, hearingHandler, transactionHandler)
 
 	// 🌸 SEED: Eğer hiç kullanıcı yoksa Admin oluştur
 	seedUsers(userService)

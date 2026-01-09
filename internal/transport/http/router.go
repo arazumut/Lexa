@@ -15,6 +15,7 @@ func NewRouter(
 	clientHandler *ClientHandler,
 	caseHandler *CaseHandler,
 	hearingHandler *HearingHandler, // Yeni eklendi
+	transactionHandler *TransactionHandler,
 ) {
 	// 1. PUBLIC ROUTE'LAR (Herkes Girebilir)
 	public := r.Group("/")
@@ -59,5 +60,14 @@ func NewRouter(
 		protected.POST("/api/hearings", hearingHandler.Create)
 		protected.PUT("/api/hearings/:id", hearingHandler.Update)
 		protected.DELETE("/api/hearings/:id", hearingHandler.Delete)
+
+		// Muhasebe (Accounting) İşlemleri
+		protected.GET("/accounting", transactionHandler.ShowList)
+		protected.GET("/accounting/new", transactionHandler.ShowCreate)
+		// Edit şimdilik yok, gerekirse eklenir
+		
+		protected.GET("/api/accounting", transactionHandler.List)
+		protected.POST("/api/accounting", transactionHandler.Create)
+		protected.DELETE("/api/accounting/:id", transactionHandler.Delete)
 	}
 }
