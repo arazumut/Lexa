@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -9,11 +10,40 @@ import (
 )
 
 type ClientHandler struct {
-	service domain.ClientService
+	service           domain.ClientService
+	transactionService domain.TransactionService
 }
 
-func NewClientHandler(service domain.ClientService) *ClientHandler {
-	return &ClientHandler{service: service}
+func NewClientHandler(service domain.ClientService, transactionService domain.TransactionService) *ClientHandler {
+	return &ClientHandler{
+		service:           service,
+		transactionService: transactionService,
+	}
+}
+
+// ShowDetail - Müvekkil detay sayfasını gösterir
+func (h *ClientHandler) ShowDetail(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	
+	// 1. Müvekkil ve Davalarını Çek
+	client, err := h.service.GetClient(uint(id))
+	if err != nil {
+		c.Redirect(http.StatusFound, "/clients")
+		return
+	}
+	
+	// 2. Finansal Özet (Son Hareketler ve Bakiye)
+	transactions, balance, _ := h.transactionService.GetClientFinancials(uint(id))
+	
+	email, _ := c.Get("email")
+	
+	c.HTML(http.StatusOK, "clients/detail.html", gin.H{
+		"title":   client.Name + " - Dosyası",
+		"email":   email,
+		"client":  client,
+		"transactions": transactions,
+		"balance": fmt.Sprintf("%.2f₺", balance),
+	})
 }
 
 // ShowList - Müvekkil listesi sayfasını render eder.

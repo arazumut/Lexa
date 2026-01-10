@@ -83,8 +83,8 @@ func main() {
 
 	// Handler'ları Hazırla
 	authHandler := transport.NewAuthHandler(userService)
-	dashboardHandler := transport.NewDashboardHandler(clientService, caseService, hearingService, transactionService) // YENİ: TransactionService
-	clientHandler := transport.NewClientHandler(clientService)
+	clientHandler := transport.NewClientHandler(clientService, transactionService) // Updated dependency
+	dashboardHandler := transport.NewDashboardHandler(clientService, caseService, hearingService, transactionService)
 
 	// CaseHandler, dropdown doldurmak için ClientService'e de ihtiyaç duyar
 	caseHandler := transport.NewCaseHandler(caseService, clientService)

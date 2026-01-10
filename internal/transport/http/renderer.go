@@ -31,6 +31,7 @@ func NewRenderer() multitemplate.Renderer {
 	r.AddFromFiles("clients/list.html", baseLayout, filepath.Join(templatesDir, "clients", "list.html"))
 	r.AddFromFiles("clients/create.html", baseLayout, filepath.Join(templatesDir, "clients", "create.html"))
 	r.AddFromFiles("clients/edit.html", baseLayout, filepath.Join(templatesDir, "clients", "edit.html"))
+	r.AddFromFiles("clients/detail.html", baseLayout, filepath.Join(templatesDir, "clients", "detail.html"))
 
 	// Dava Dosyaları (Cases)
 	r.AddFromFiles("cases/list.html", baseLayout, filepath.Join(templatesDir, "cases", "list.html"))

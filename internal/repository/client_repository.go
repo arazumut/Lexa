@@ -29,7 +29,8 @@ func (r *clientRepository) Delete(id uint) error {
 func (r *clientRepository) FindByID(id uint) (*domain.Client, error) {
 	var client domain.Client
 	// First metodu, kayıt bulamazsa ErrRecordNotFound döner, bu bizim için beklenen bir durum.
-	err := r.db.First(&client, id).Error
+	// Preload("Cases") ile müvekkilin davalarını da çekiyoruz.
+	err := r.db.Preload("Cases").First(&client, id).Error
 	if err != nil {
 		return nil, err
 	}

@@ -34,6 +34,7 @@ func NewRouter(
 		// Müvekkil İşlemleri
 		protected.GET("/clients", clientHandler.ShowList)
 		protected.GET("/clients/new", clientHandler.ShowCreate)
+		protected.GET("/clients/:id", clientHandler.ShowDetail) // Detay Sayfası
 		protected.GET("/clients/:id/edit", clientHandler.ShowEdit)
 		
 		protected.GET("/api/clients", clientHandler.List)

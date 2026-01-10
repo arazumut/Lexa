@@ -54,6 +54,7 @@ type TransactionRepository interface {
 	GetTotalBalance() (float64, error)
 	// GetMonthlyStats Son 6 ayın gelir/gider grafiği için veri döner
 	GetMonthlyStats() ([]MonthlyStat, error)
+	GetClientTransactions(clientID uint) ([]Transaction, error)
 }
 
 // TransactionService interface (Port)
@@ -64,6 +65,7 @@ type TransactionService interface {
 	GetTransaction(id uint) (*Transaction, error)
 	ListTransactions(page, pageSize int, filter TransactionFilter) ([]Transaction, int64, error)
 	GetDashboardFinancials() (float64, []MonthlyStat, error)
+	GetClientFinancials(clientID uint) ([]Transaction, float64, error)
 }
 
 // DTOs & Helper Structs

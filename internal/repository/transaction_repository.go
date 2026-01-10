@@ -133,3 +133,17 @@ func (r *transactionRepository) GetMonthlyStats() ([]domain.MonthlyStat, error) 
 	
 	return stats, nil
 }
+
+// GetClientTransactions bir müvekkile ait son hareketleri getirir.
+func (r *transactionRepository) GetClientTransactions(clientID uint) ([]domain.Transaction, error) {
+	var txs []domain.Transaction
+	
+	// Son 50 işlemi getir, tarihe göre tersten sırala
+	err := r.db.Where("client_id = ?", clientID).
+		Preload("Case"). // Hangi davayla ilgili olduğunu görmek için
+		Order("date desc").
+		Limit(50).
+		Find(&txs).Error
+		
+	return txs, err
+}
