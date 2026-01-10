@@ -32,16 +32,17 @@
             </div>
             <div class="body">
                 <div class="table-responsive">
-                    <table class="table table-hover js-basic-example dataTable table-custom" id="trxTable">
+                    <table class="table table-hover js-basic-example dataTable table-custom dt-responsive nowrap w-100"
+                        id="trxTable">
                         <thead class="thead-dark">
                             <tr>
-                                <th>Tarih</th>
+                                <th data-priority="1">Tarih</th>
                                 <th>Tür</th>
                                 <th>Kategori</th>
                                 <th>Açıklama</th>
-                                <th>Tutar</th>
+                                <th data-priority="2">Tutar</th>
                                 <th>Müvekkil / Dava</th>
-                                <th>İşlem</th>
+                                <th data-priority="3">İşlem</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -104,6 +105,7 @@
                     }
                 }
             ],
+            "responsive": true,
             "language": {
                 "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Turkish.json"
             }

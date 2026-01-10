@@ -26,16 +26,17 @@
             </div>
             <div class="body">
                 <div class="table-responsive">
-                    <table class="table table-hover js-basic-example dataTable table-custom" id="casesTable">
+                    <table class="table table-hover js-basic-example dataTable table-custom dt-responsive nowrap w-100"
+                        id="casesTable">
                         <thead class="thead-dark">
                             <tr>
                                 <th>Durum</th>
-                                <th>Dosya No</th>
-                                <th>Müvekkil</th>
+                                <th data-priority="1">Dosya No</th>
+                                <th data-priority="2">Müvekkil</th>
                                 <th>Dava Konusu</th>
                                 <th>Mahkeme</th>
                                 <th>Tür</th>
-                                <th>İşlemler</th>
+                                <th data-priority="3">İşlemler</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -108,6 +109,7 @@
                     }
                 }
             ],
+            "responsive": true,
             "language": {
                 "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Turkish.json"
             }
