@@ -69,4 +69,21 @@ func (h *DashboardHandler) Show(c *gin.Context) {
 		"monthlyStats":     string(statsJSON),
 		"recentCases":      recentCases,
 	})
+	})
+}
+
+// GetMiniStats, Layout'un sol barındaki (Sidebar) mini istatistikler için JSON döner.
+// Her sayfada (Client, Case vb.) bu endpoint AJAX ile çağrılır.
+func (h *DashboardHandler) GetMiniStats(c *gin.Context) {
+	// 1. Basitçe countları al (Hata olursa 0 varsayalım)
+	totalClients, _ := h.clientService.GetTotalCount()
+	caseStats, _ := h.caseService.GetCaseStatistics()
+	balance, _, _ := h.transactionService.GetDashboardFinancials()
+
+	// 2. JSON Dön
+	c.JSON(http.StatusOK, gin.H{
+		"totalFiles":   caseStats["active"] + caseStats["closed"], // Toplam dosya sayısı
+		"totalClients": totalClients,
+		"totalBalance": fmt.Sprintf("%.2f₺", balance),
+	})
 }

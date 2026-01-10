@@ -19,6 +19,109 @@
 
     <!-- MAIN Project CSS file -->
     <link rel="stylesheet" href="/assets/css/main.css">
+
+    <style>
+        /* Modern Mobil Header ve Layout Düzenlemesi (KESİN ÇÖZÜM) */
+        @media (max-width: 767px) {
+
+            /* Navbar Ayarları */
+            .navbar-fixed-top {
+                padding: 0 10px;
+                left: 0 !important;
+                width: 100% !important;
+                z-index: 10002;
+            }
+
+            .navbar-brand {
+                float: none;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                margin-right: 0;
+            }
+
+            .navbar-right,
+            .navbar-form {
+                display: none !important;
+            }
+
+            /* Sidebar Ayarları */
+            #left-sidebar {
+                left: -300px;
+                position: fixed;
+                z-index: 10003;
+                height: 100vh;
+                width: 280px;
+                transition: all 0.3s ease-in-out;
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            }
+
+            #left-sidebar.mobile-active {
+                left: 0;
+            }
+
+            /* İÇERİK NO-SCROLL & FULL WIDTH AYARLARI */
+            body {
+                overflow-x: hidden;
+            }
+
+            #main-content {
+                width: 100vw !important;
+                margin: 0 !important;
+                left: 0 !important;
+                padding-top: 70px;
+                /* Navbar Yüksekliği */
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+
+            #main-content .container-fluid {
+                padding-left: 15px !important;
+                padding-right: 15px !important;
+                width: 100% !important;
+            }
+
+            /* Diğer */
+            .btn-toggle-offcanvas {
+                display: block !important;
+                float: left;
+                margin-right: 15px;
+                color: #fff;
+                font-size: 24px;
+                background: none;
+                border: none;
+            }
+
+            .navbar-brand a {
+                color: #fff;
+                font-size: 22px;
+                font-weight: bold;
+                text-decoration: none;
+            }
+
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.6);
+                z-index: 10001;
+                backdrop-filter: blur(2px);
+            }
+
+            .mobile-overlay.active {
+                display: block;
+            }
+
+            /* Gizlenecekler */
+            .right_icon_bar {
+                display: none !important;
+            }
+        }
+    </style>
 </head>
 
 <body data-theme="light" class="font-nunito">
@@ -77,15 +180,15 @@
                     <ul class="row list-unstyled">
                         <li class="col-4">
                             <small>Dosyalar</small>
-                            <h6>0</h6>
+                            <h6 id="mini-stat-files">...</h6>
                         </li>
                         <li class="col-4">
                             <small>Müvekkil</small>
-                            <h6>0</h6>
+                            <h6 id="mini-stat-clients">...</h6>
                         </li>
                         <li class="col-4">
                             <small>Bakiye</small>
-                            <h6>0₺</h6>
+                            <h6 id="mini-stat-balance">...</h6>
                         </li>
                     </ul>
                 </div>
@@ -166,15 +269,7 @@
             </div>
         </div>
 
-        <!-- rightbar icon div -->
-        <div class="right_icon_bar">
-            <ul>
-                <li><a href="#"><i class="fa fa-envelope"></i></a></li>
-                <li><a href="#"><i class="fa fa-calendar"></i></a></li>
-                <li><a href="#"><i class="fa fa-folder"></i></a></li>
-                <li><a href="javascript:void(0);" class="right_icon_btn"><i class="fa fa-angle-right"></i></a></li>
-            </ul>
-        </div>
+
 
         <!-- mani page content body part -->
         <div id="main-content">
@@ -204,6 +299,24 @@
             document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             window.location.href = "/login";
         }
+
+        // Sidebar Mini Stats Güncelleme
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch('/api/stats/mini')
+                .then(response => response.json())
+                .then(data => {
+                    if (document.getElementById('mini-stat-files')) {
+                        document.getElementById('mini-stat-files').innerText = data.totalFiles;
+                    }
+                    if (document.getElementById('mini-stat-clients')) {
+                        document.getElementById('mini-stat-clients').innerText = data.totalClients;
+                    }
+                    if (document.getElementById('mini-stat-balance')) {
+                        document.getElementById('mini-stat-balance').innerText = data.totalBalance;
+                    }
+                })
+                .catch(error => console.error('Sidebar stats error:', error));
+        });
     </script>
 
     {{ block "scripts" . }}{{ end }}

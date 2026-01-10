@@ -30,6 +30,7 @@ func NewRouter(
 	protected.Use(middleware.AuthMiddleware(jwtService)) // 🛡️ Kalkan Devrede!
 	{
 		protected.GET("/", dashboardHandler.Show) // Dashboard
+		protected.GET("/api/stats/mini", dashboardHandler.GetMiniStats) // Sidebar İstatistikleri
 		
 		// Müvekkil İşlemleri
 		protected.GET("/clients", clientHandler.ShowList)
