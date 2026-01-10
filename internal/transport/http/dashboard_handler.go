@@ -69,7 +69,7 @@ func (h *DashboardHandler) Show(c *gin.Context) {
 		"monthlyStats":     string(statsJSON),
 		"recentCases":      recentCases,
 	})
-	})
+
 }
 
 // GetMiniStats, Layout'un sol barındaki (Sidebar) mini istatistikler için JSON döner.
