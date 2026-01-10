@@ -28,8 +28,11 @@
                                 <label>Müvekkil Seçimi <span class="text-danger">*</span></label>
                                 <select class="form-control show-tick" name="client_id" required>
                                     <option value="">-- Müvekkil Seçiniz --</option>
+                                    {{ $selected := .selectedClientID }}
                                     {{ range .clients }}
-                                    <option value="{{ .ID }}">{{ .Name }} ({{ .Identity }})</option>
+                                    <option value="{{ .ID }}" {{ if eq (printf "%d" .ID) $selected }}selected{{ end }}>
+                                        {{ .Name }} ({{ .Identity }})
+                                    </option>
                                     {{ end }}
                                 </select>
                             </div>

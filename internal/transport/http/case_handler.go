@@ -42,10 +42,14 @@ func (h *CaseHandler) ShowCreate(c *gin.Context) {
 	// Şimdilik 100 müvekkil limitiyle listeyi alalım.
 	clients, _, _, _ := h.clientService.ListClients(1, 100, "")
 
+	// URL'den gelen pre-select parametresi
+	selectedClientID := c.Query("client_id")
+
 	c.HTML(http.StatusOK, "cases/create.html", gin.H{
-		"title":   "Yeni Dava Aç - LEXA",
-		"email":   email,
-		"clients": clients, // Dropdown için
+		"title":            "Yeni Dava Aç - LEXA",
+		"email":            email,
+		"clients":          clients, // Dropdown için
+		"selectedClientID": selectedClientID,
 	})
 }
 
