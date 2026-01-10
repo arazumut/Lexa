@@ -89,7 +89,113 @@
                 <h2>Gelir/Gider Özeti</h2>
             </div>
             <div class="body">
-                <div id="Google-Analytics-Dashboard" style="height: 230px"></div>
+                <div id="financial-chart" style="height: 300px"></div>
+                <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                        // Backend'den gelen veriyi güvenli bir şekilde al
+                        var stats = JSON.parse('{{ .monthlyStats }}');
+
+                        if (!stats || stats.length === 0) {
+                            document.getElementById('financial-chart').innerHTML = '<div class="text-center text-muted p-4">Henüz finansal veri yok.</div>';
+                            return;
+                        }
+
+                        var months = ['x'];
+                        var income = ['Gelir'];
+                        var expense = ['Gider'];
+
+                        stats.forEach(function (s) {
+                            months.push(s.Month);
+                            income.push(s.Income);
+                            expense.push(s.Expense);
+                        });
+
+                        var chart = c3.generate({
+                            bindto: '#financial-chart',
+                            data: {
+                                x: 'x',
+                                columns: [
+                                    months,
+                                    income,
+                                    expense
+                                ],
+                                type: 'bar', // Bar grafiği daha şık durur
+                                colors: {
+                                    'Gelir': '#28a745', // Yeşil
+                                    'Gider': '#dc3545'  // Kırmızı
+                                }
+                            },
+                            axis: {
+                                x: {
+                                    type: 'category', // Ay isimleri kategori olarak
+                                    tick: {
+                                        rotate: -45,
+                                        multiline: false
+                                    },
+                                    height: 50
+                                },
+                                y: {
+                                    tick: {
+                                        format: d3.format(",") // Binlik ayracı
+                                    }
+                                }
+                            },
+                            grid: {
+                                y: {
+                                    show: true
+                                }
+                            }
+                        });
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Son Dava Dosyaları Tablosu -->
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h2>Son Eklenen Dosyalar</h2>
+                <ul class="header-dropdown">
+                    <li><a href="/cases" class="btn btn-sm btn-outline-primary">Tümünü Gör</a></li>
+                </ul>
+            </div>
+            <div class="body">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Dosya No</th>
+                                <th>Dava Konusu</th>
+                                <th>Müvekkil</th>
+                                <th>Durum</th>
+                                <th>Tarih</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{ range .recentCases }}
+                            <tr>
+                                <td><a href="/cases/{{ .ID }}/edit"><strong>{{ .FileNumber }}</strong></a></td>
+                                <td>{{ .Title }}</td>
+                                <td>{{ if .Client }}{{ .Client.Name }}{{ else }}-{{ end }}</td>
+                                <td>
+                                    {{ if eq .Status "active" }}<span class="badge badge-success">Aktif</span>
+                                    {{ else if eq .Status "closed" }}<span class="badge badge-success">Kapandı</span>
+                                    {{ else }}<span class="badge badge-default">{{ .Status }}</span>{{ end }}
+                                </td>
+                                <td>{{ .CreatedAt.Format "02.01.2006" }}</td>
+                            </tr>
+                            {{ else }}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Henüz dosya kaydı yok.</td>
+                            </tr>
+                            {{ end }}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -97,5 +203,8 @@
 {{ end }}
 
 {{ define "scripts" }}
-<script src="/assets/js/index.js"></script>
+<!-- D3 ve C3 kütüphaneleri asıl layout'ta varsa buraya eklemeye gerek yok ama
+     base.html'de c3.bundle.js var, o yüzden yeterli. -->
+<script src="/assets/bundles/c3.bundle.js"></script>
+
 {{ end }}

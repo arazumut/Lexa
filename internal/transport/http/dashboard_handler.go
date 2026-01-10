@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -41,12 +42,20 @@ func (h *DashboardHandler) Show(c *gin.Context) {
 	// Finansal Veriler (Bakiye ve Grafik)
 	balance, monthlyStats, _ := h.transactionService.GetDashboardFinancials()
 
+	// Son Eklenen Dosyalar
+	summary, _ := h.caseService.GetDashboardSummary()
+	recentCases := summary["recent_cases"]
+
 	// Basit hesaplamalar
 	activeCases := caseStats["active"]
 	closedCases := caseStats["closed"]
 	
 	// Para Formatı (Basit)
 	totalRevenue := fmt.Sprintf("%.2f₺", balance)
+
+	// Veriyi JSON string'e çevir (JS içinde kullanmak için)
+	// Not: Production kodunda hata yönetimi iyi yapılmalı
+	statsJSON, _ := json.Marshal(monthlyStats)
 
 	c.HTML(http.StatusOK, "dashboard/dashboard.html", gin.H{
 		"title":            "Ana Sayfa - LEXA",
@@ -57,6 +66,7 @@ func (h *DashboardHandler) Show(c *gin.Context) {
 		"closedCases":      closedCases,
 		"totalRevenue":     totalRevenue,
 		"upcomingHearings": upcomingHearings,
-		"monthlyStats":     monthlyStats, // Grafik için (JS tarafında json olarak kullanılacak)
+		"monthlyStats":     string(statsJSON),
+		"recentCases":      recentCases,
 	})
 }
