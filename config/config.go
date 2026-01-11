@@ -8,14 +8,12 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Config, uygulamanın tüm ayarlarını tutan struct.
 type Config struct {
 	AppPort      string
 	DBPath       string
 	Environment  string
 }
 
-// LoadConfig, .env dosyasını okur ve Config struct'ını doldurur.
 func LoadConfig() *Config {
 	if err := godotenv.Load(); err != nil {
 		log.Println("UYARI: .env dosyası bulunamadı, ortam değişkenleri kontrol ediliyor...")
@@ -28,7 +26,6 @@ func LoadConfig() *Config {
 	}
 }
 
-// getEnv, ortam değişkenini okur, yoksa default değeri döner.
 func getEnv(key, fallback string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
@@ -36,7 +33,6 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
-// getEnvAsInt, ortam değişkenini int olarak okur.
 func getEnvAsInt(key string, fallback int) int {
 	valueStr := getEnv(key, "")
 	if value, err := strconv.Atoi(valueStr); err == nil {
