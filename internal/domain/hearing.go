@@ -9,43 +9,35 @@ import (
 type HearingStatus string
 
 const (
-	HearingStatusScheduled HearingStatus = "scheduled" // Planlandı
-	HearingStatusCompleted HearingStatus = "completed" // Tamamlandı
-	HearingStatusPostponed HearingStatus = "postponed" // Ertelendi
-	HearingStatusCancelled HearingStatus = "cancelled" // İptal Edildi
+	HearingStatusScheduled HearingStatus = "scheduled"
+	HearingStatusCompleted HearingStatus = "completed"
+	HearingStatusPostponed HearingStatus = "postponed"
+	HearingStatusCancelled HearingStatus = "cancelled"
 )
 
-// Hearing, bir dava dosyasına ait duruşmayı veya randevuyu temsil eder.
-// Clean Architecture: Entity
 type Hearing struct {
 	ID          uint          `gorm:"primaryKey" json:"id"`
-	CaseID      uint          `gorm:"not null;index" json:"case_id"`   // Hangi dava?
-	Case        Case          `gorm:"foreignKey:CaseID" json:"case"`   // Relationship
-	Title       string        `gorm:"size:200;not null" json:"title"`  // Duruşma Konusu (Örn: Tanık Dinlenmesi)
-	Date        time.Time     `gorm:"index;not null" json:"date"`      // Duruşma Tarihi ve Saati
-	Location    string        `gorm:"size:200" json:"location"`        // Yer (Mahkeme salonu vb. Genelde davanın mahkemesidir ama değişebilir)
+	CaseID      uint          `gorm:"not null;index" json:"case_id"`
+	Case        Case          `gorm:"foreignKey:CaseID" json:"case"`
+	Title       string        `gorm:"size:200;not null" json:"title"`
+	Date        time.Time     `gorm:"index;not null" json:"date"`
+	Location    string        `gorm:"size:200" json:"location"`
 	Status      HearingStatus `gorm:"size:20;default:'scheduled'" json:"status"`
-	Description string        `gorm:"type:text" json:"description"`    // Açıklama / Hazırlık Notları
-	Result      string        `gorm:"type:text" json:"result"`         // Duruşma Sonucu / Ara Karar
+	Description string        `gorm:"type:text" json:"description"`
+	Result      string        `gorm:"type:text" json:"result"`
 	CreatedAt   time.Time     `json:"created_at"`
 	UpdatedAt   time.Time     `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
-// HearingRepository interface (Port)
 type HearingRepository interface {
 	Create(h *Hearing) error
 	Update(h *Hearing) error
 	Delete(id uint) error
 	FindByID(id uint) (*Hearing, error)
-	// FindAll fonksiyonu tarih aralığına göre de filtreleme yapabilir.
 	FindAll(page, pageSize int, caseID uint) ([]Hearing, int64, error)
-	// GetUpcoming dashboard ve bildirimler için yaklaşan duruşmaları getirir.
-	// days: Kaç gün sonrasına kadar? (Örn: 7 gün)
 	GetUpcoming(limit int) ([]Hearing, error)
 }
-
-// HearingService interface (Port)
 type HearingService interface {
 	CreateHearing(h *Hearing) error
 	UpdateHearing(h *Hearing) error
