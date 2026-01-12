@@ -120,6 +120,21 @@
             .right_icon_bar {
                 display: none !important;
             }
+
+            /* Full Width Toggle Gizle (Mobile) */
+            .btn-toggle-fullwidth {
+                display: none !important;
+            }
+
+            /* Mobil Çıkış Butonu */
+            .mobile-logout-btn {
+                display: block;
+                color: #fff;
+                background: none;
+                border: none;
+                font-size: 20px;
+                cursor: pointer;
+            }
         }
     </style>
 </head>
@@ -137,6 +152,9 @@
                     <button type="button" class="btn-toggle-offcanvas"><i class="fa fa-bars"></i></button>
                     <button type="button" class="btn-toggle-fullwidth"><i class="fa fa-bars"></i></button>
                     <a href="/">LEXA</a>
+                    <!-- Mobile Logout Button (Görünür olması için) -->
+                    <button type="button" class="mobile-logout-btn d-md-none" onclick="logout()"><i
+                            class="fa fa-power-off"></i></button>
                 </div>
 
                 <div class="navbar-right">
