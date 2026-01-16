@@ -2,138 +2,112 @@
 <div class="block-header">
     <div class="row">
         <div class="col-lg-6 col-md-8 col-sm-12">
-            <h2><a href="/clients" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a>
-                Müvekkil Dosyası</h2>
+            <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i
+                        class="fa fa-arrow-left"></i></a> Müvekkil Profili</h2>
             <ul class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/"><i class="icon-home"></i></a></li>
                 <li class="breadcrumb-item"><a href="/clients">Müvekkiller</a></li>
-                <li class="breadcrumb-item active">{{ .client.Name }}</li>
+                <li class="breadcrumb-item active">Müvekkil Detayı</li>
             </ul>
         </div>
         <div class="col-lg-6 col-md-4 col-sm-12 text-right">
-            <a href="/clients/{{ .client.ID }}/edit" class="btn btn-secondary" title="Düzenle"><i
-                    class="fa fa-edit"></i> Düzenle</a>
-            <button type="button" class="btn btn-danger" onclick="deleteClient({{ .client.ID }})" title="Sil"><i
-                    class="fa fa-trash-o"></i> Sil</button>
+            <a href="/clients/{{ .client.ID }}/edit" class="btn btn-info"><i class="fa fa-pencil"></i> Düzenle</a>
+            <button type="button" class="btn btn-danger" onclick="deleteClient({{ .client.ID }})"><i
+                    class="fa fa-trash"></i> Sil</button>
         </div>
     </div>
 </div>
 
 <div class="row clearfix">
-    <!-- Sol Sütun: Profil Kartı -->
+    <!-- Sol Kolon: Profil Kartı -->
     <div class="col-lg-4 col-md-12">
         <div class="card profile-header">
-            <div class="body">
+            <div class="body text-center">
                 <div class="profile-image">
-                    {{ if eq .client.Type "corporate" }}
-                    <img src="/assets/images/user.png" class="rounded-circle" alt="Company Logo"
-                        style="filter: hue-rotate(90deg);">
-                    {{ else }}
-                    <img src="/assets/images/user.png" class="rounded-circle" alt="Profile Image">
-                    {{ end }}
+                    <img src="/assets/images/user.png" class="rounded-circle" alt="User">
                 </div>
                 <div>
                     <h4 class="m-b-0"><strong>{{ .client.Name }}</strong></h4>
-                    {{ if eq .client.Type "corporate" }}
-                    <span class="badge badge-info">Kurumsal</span>
-                    {{ else }}
-                    <span class="badge badge-success">Bireysel</span>
-                    {{ end }}
-                    <p class="mt-2">{{ .client.Identity }}<br>{{ .client.Email }}</p>
+                    <span>{{ if eq .client.Type "corporate" }}Kurumsal{{ else }}Bireysel{{ end }}</span>
                 </div>
-
-                <div class="m-t-15">
-                    <a href="tel:{{ .client.Phone }}" class="btn btn-primary"><i class="fa fa-phone"></i> Ara</a>
-                    <a href="mailto:{{ .client.Email }}" class="btn btn-outline-secondary"><i
-                            class="fa fa-envelope"></i> E-Posta</a>
-                </div>
+                <!-- İleride buraya Bakiye Bilgisi Gelecek -->
             </div>
         </div>
 
         <div class="card">
             <div class="header">
-                <h2>Bakiye Özeti</h2>
+                <h2>İletişim & Detaylar</h2>
             </div>
             <div class="body">
-                <ul class="list-unstyled basic-list">
-                    <li>Toplam Bakiye <span class="badge badge-primary float-right">{{ .balance }}</span></li>
-                    <!-- İleride Alacak/Verecek detayı eklenebilir -->
-                    <!-- <li>Borç <span class="badge badge-danger float-right">-</span></li> -->
-                </ul>
-                <div class="text-center">
-                    <!-- Tip seçimini otomatik yapabilmek için URL parametresi ekliyoruz -->
-                    <a href="/accounting/new?client_id={{ .client.ID }}&type=income" class="btn btn-success btn-sm"><i
-                            class="fa fa-plus"></i> Tahsilat Ekle</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="header">
-                <h2>İletişim & Adres</h2>
-            </div>
-            <div class="body">
-                <small class="text-muted">Telefon: </small>
+                <small class="text-muted">TC / Vergi No:</small>
+                <p>{{ .client.Identity }}</p>
+                <hr>
+                <small class="text-muted">Telefon:</small>
                 <p>{{ .client.Phone }}</p>
                 <hr>
-                <small class="text-muted">Adres: </small>
+                <small class="text-muted">Email:</small>
+                <p>{{ .client.Email }}</p>
+                <hr>
+                <small class="text-muted">Adres:</small>
                 <p>{{ .client.Address }}</p>
+                <div class="mapouter">
+                    <div class="gmap_canvas"><iframe width="100%" height="200" id="gmap_canvas"
+                            src="https://maps.google.com/maps?q={{ .client.Address }}&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                            frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Sağ Sütun: Sekmeler (Tabs) -->
+    <!-- Sağ Kolon: Sekmeler (Davalar, Notlar) -->
     <div class="col-lg-8 col-md-12">
         <div class="card">
             <div class="body">
-                <!-- Nav tabs -->
-                <ul class="nav nav-tabs">
-                    <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#casesTab">Dava
-                            Dosyaları</a></li>
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#financeTab">Finansal Geçmiş</a>
-                    </li>
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#notesTab">Notlar</a></li>
+                <ul class="nav nav-tabs-new">
+                    <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#Cases">Davalar <span
+                                class="badge badge-primary">{{ len .client.Cases }}</span></a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Notes">Notlar</a></li>
+                    <!-- İleride: Finans Geçmişi -->
                 </ul>
+                <div class="tab-content mt-3">
 
-                <!-- Tab panes -->
-                <div class="tab-content">
-
-                    <!-- 1. Dava Dosyaları -->
-                    <div role="tabpanel" class="tab-pane in active" id="casesTab">
-                        <div class="header d-flex justify-content-between align-items-center pt-0 pb-2">
-                            <h2>Bağlı Dosyalar</h2>
+                    <!-- 1. DAVALAR -->
+                    <div class="tab-pane active" id="Cases">
+                        <div class="header d-flex justify-content-between">
+                            <h2>Bağlı Dava Dosyaları</h2>
                             <a href="/cases/new?client_id={{ .client.ID }}" class="btn btn-sm btn-outline-primary"><i
-                                    class="fa fa-plus"></i> Yeni Dosya Aç</a>
+                                    class="fa fa-plus"></i> Yeni Dava Aç</a>
                         </div>
                         <div class="table-responsive">
-                            <table class="table table-hover table-custom spacing5">
+                            <table class="table table-hover">
                                 <thead>
                                     <tr>
                                         <th>Dosya No</th>
                                         <th>Konu</th>
-                                        <th>Durum</th>
                                         <th>Mahkeme</th>
-                                        <th>Tarih</th>
+                                        <th>Durum</th>
+                                        <th>İşlem</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {{ range .client.Cases }}
                                     <tr>
-                                        <td><a href="/cases/{{ .ID }}/edit"><strong>{{ .FileNumber }}</strong></a></td>
+                                        <td><a href="/cases/{{ .ID }}"><strong>{{ .FileNumber }}</strong></a></td>
                                         <td>{{ .Title }}</td>
+                                        <td>{{ .Court }}</td>
                                         <td>
                                             {{ if eq .Status "active" }}<span class="badge badge-success">Aktif</span>
-                                            {{ else if eq .Status "closed" }}<span
-                                                class="badge badge-default">Kapalı</span>
-                                            {{ else }}<span class="badge badge-warning">{{ .Status }}</span>{{ end }}
+                                            {{ else }}<span class="badge badge-secondary">{{ .Status }}</span>{{ end }}
                                         </td>
-                                        <td>{{ .Court }}</td>
-                                        <td>{{ .CreatedAt.Format "02.01.2006" }}</td>
+                                        <td>
+                                            <a href="/cases/{{ .ID }}" class="btn btn-sm btn-outline-secondary"
+                                                title="Detay"><i class="fa fa-eye"></i></a>
+                                        </td>
                                     </tr>
                                     {{ else }}
                                     <tr>
-                                        <td colspan="5" class="text-center text-muted">Henüz kayıtlı dava dosyası yok.
-                                        </td>
+                                        <td colspan="5" class="text-center text-muted">Bu müvekkile ait dava dosyası
+                                            bulunamadı.</td>
                                     </tr>
                                     {{ end }}
                                 </tbody>
@@ -141,58 +115,10 @@
                         </div>
                     </div>
 
-                    <!-- 2. Finansal Geçmiş -->
-                    <div role="tabpanel" class="tab-pane" id="financeTab">
-                        <div class="header d-flex justify-content-between align-items-center pt-0 pb-2">
-                            <h2>Son Hareketler (Max 50)</h2>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Tarih</th>
-                                        <th>Açıklama</th>
-                                        <th>İşlem</th>
-                                        <th>Tutar</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {{ range .transactions }}
-                                    <tr>
-                                        <td>{{ .Date.Format "02.01.2006" }}</td>
-                                        <td>
-                                            {{ .Description }}
-                                            {{ if .Case }}<br><small class="text-muted"><i class="fa fa-folder"></i> {{
-                                                .Case.FileNumber }}</small>{{ end }}
-                                        </td>
-                                        <td>
-                                            {{ if eq .Type "income" }}<span class="badge badge-success">Gelir</span>
-                                            {{ else }}<span class="badge badge-danger">Gider</span>{{ end }}
-                                        </td>
-                                        <td>
-                                            {{ if eq .Type "income" }}
-                                            <span class="text-success font-weight-bold">+{{ printf "%.2f" .Amount
-                                                }}₺</span>
-                                            {{ else }}
-                                            <span class="text-danger font-weight-bold">-{{ printf "%.2f" .Amount
-                                                }}₺</span>
-                                            {{ end }}
-                                        </td>
-                                    </tr>
-                                    {{ else }}
-                                    <tr>
-                                        <td colspan="4" class="text-center text-muted">Finansal hareket bulunamadı.</td>
-                                    </tr>
-                                    {{ end }}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- 3. Notlar -->
-                    <div role="tabpanel" class="tab-pane" id="notesTab">
-                        <p class="m-t-10">{{ if .client.Notes }}{{ .client.Notes }}{{ else }}Özel bir not eklenmemiş.{{
-                            end }}</p>
+                    <!-- 2. NOTLAR -->
+                    <div class="tab-pane" id="Notes">
+                        <h6>Müvekkil Hakkında Notlar</h6>
+                        <p>{{ if .client.Notes }}{{ .client.Notes }}{{ else }}Özel bir not girilmemiş.{{ end }}</p>
                     </div>
 
                 </div>
@@ -203,22 +129,19 @@
 {{ end }}
 
 {{ define "scripts" }}
-<script src="/assets/vendor/toastr/toastr.js"></script>
 <script>
     function deleteClient(id) {
-        if (confirm("Bu müvekkili silmek istediğinize emin misiniz?")) {
-            $.ajax({
-                url: '/api/clients/' + id,
-                type: 'DELETE',
-                success: function (result) {
-                    toastr.success("Müvekkil silindi.", "Başarılı");
-                    setTimeout(function () { window.location.href = "/clients"; }, 1500);
-                },
-                error: function (xhr) {
-                    toastr.error("Hata: " + (xhr.responseJSON ? xhr.responseJSON.error : "Bilinmeyen hata"), "Hata");
+        if (!confirm('DİKKAT! Bu işlem geri alınamaz. Bu müvekkili silmek istediğinize emin misiniz?')) return;
+
+        fetch('/api/clients/' + id, { method: 'DELETE' })
+            .then(response => {
+                if (response.ok) {
+                    toastr.success('Müvekkil silindi.');
+                    setTimeout(() => window.location.href = '/clients', 1000);
+                } else {
+                    toastr.error('Silinemedi.');
                 }
             });
-        }
     }
 </script>
 {{ end }}

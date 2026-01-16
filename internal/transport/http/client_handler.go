@@ -136,7 +136,30 @@ func (h *ClientHandler) ShowEdit(c *gin.Context) {
 	c.HTML(http.StatusOK, "clients/edit.html", gin.H{
 		"title": "Müvekkil Düzenle - LEXA",
 		"email": email,
-		"client": client, // Mevcut veriyi template'e gönder
+	// Mevcut veriyi template'e gönder
+		"client": client, 
+	})
+}
+
+// ShowDetail - Müvekkil detay sayfasını render eder (O mükemmel 360 derece görünüm)
+func (h *ClientHandler) ShowDetail(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+	
+	// Repository'de Preload ile zaten davaları çekiyorduk.
+	// Ancak finansal özet için ekstra bir sorgu veya hesaplama gerekebilir.
+	// Şimdilik temel verileri gösterelim, UI'da sekmelerle (Dava, Borç vs) ayıracağız.
+	client, err := h.service.GetClient(uint(id))
+	if err != nil {
+		c.Redirect(http.StatusFound, "/clients")
+		return
+	}
+	
+	email, _ := c.Get("email")
+
+	c.HTML(http.StatusOK, "clients/detail.html", gin.H{
+		"title": client.Name + " - Müvekkil Detayı",
+		"email": email,
+		"client": client,
 	})
 }
 
