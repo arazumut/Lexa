@@ -97,11 +97,15 @@ func main() {
 
 	// Document Handler
 	documentRepo := repository.NewDocumentRepository(db)
-	documentService := service.NewDocumentService(documentRepo, "./web/static/uploads") // Upload path
+	documentService := service.NewDocumentService(documentRepo, "./web/static/uploads")
 	documentHandler := transport.NewDocumentHandler(documentService)
 
+	// Search Handler (Global)
+	searchService := service.NewSearchService(clientRepo, caseRepo)
+	searchHandler := transport.NewSearchHandler(searchService)
+
 	// Router'ı Kur (Dependency Injection)
-	transport.NewRouter(r, jwtService, authHandler, dashboardHandler, clientHandler, caseHandler, hearingHandler, transactionHandler, documentHandler)
+	transport.NewRouter(r, jwtService, authHandler, dashboardHandler, clientHandler, caseHandler, hearingHandler, transactionHandler, documentHandler, searchHandler)
 
 	// 🌸 SEED: Eğer hiç kullanıcı yoksa Admin oluştur
 	seedUsers(userService)

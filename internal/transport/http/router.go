@@ -16,7 +16,8 @@ func NewRouter(
 	caseHandler *CaseHandler,
 	hearingHandler *HearingHandler,
 	transactionHandler *TransactionHandler,
-	documentHandler *DocumentHandler, // YENİ
+	documentHandler *DocumentHandler,
+	searchHandler *SearchHandler, // Global Search
 ) {
 	// 1. PUBLIC ROUTE'LAR (Herkes Girebilir)
 	public := r.Group("/")
@@ -78,5 +79,8 @@ func NewRouter(
 		protected.POST("/api/documents/upload", documentHandler.Upload)
 		protected.DELETE("/api/documents/:id", documentHandler.Delete)
 		protected.GET("/api/cases/:id/documents", documentHandler.ListByCase)
+
+		// 🔍 Global Arama
+		protected.GET("/api/search", searchHandler.Search)
 	}
 }
