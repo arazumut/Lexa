@@ -36,7 +36,7 @@ func main() {
 
 	// 🛠 DATABASE MIGRATION (Tablo Oluşturma)
 	// Eksik tablolaları otomatik oluşturur.
-	db.AutoMigrate(&domain.User{}, &domain.Client{}, &domain.Case{}, &domain.Hearing{}, &domain.Transaction{}) // Transaction eklendi
+	db.AutoMigrate(&domain.User{}, &domain.Client{}, &domain.Case{}, &domain.Hearing{}, &domain.Transaction{}, &domain.Document{}) // Document eklendi
 	
 	// GORM'un kendi connection pool yönetimi var ama kapatmak istersek underlying SQL DB'ye erişiriz.
 	// main fonksiyonu bitince connection pool da kapanır.
@@ -55,8 +55,8 @@ func main() {
 	transactionRepo := repository.NewTransactionRepository(db) // YENİ
 	
 	// 2. Service (İş Mantığı)
-	jwtSecret := "super-secret-key-change-me" 
-	jwtService := service.NewJWTService(jwtSecret, "lexa-app", 24)
+	// 2. Service (İş Mantığı)
+	jwtService := service.NewJWTService(cfg.JWTSecret, "lexa-app", 24)
 	
 	userService := service.NewUserService(userRepo, jwtService)
 	clientService := service.NewClientService(clientRepo)
@@ -95,8 +95,13 @@ func main() {
 	// Transaction Handler (ClientService ve CaseService dropdown için)
 	transactionHandler := transport.NewTransactionHandler(transactionService, clientService, caseService)
 
+	// Document Handler
+	documentRepo := repository.NewDocumentRepository(db)
+	documentService := service.NewDocumentService(documentRepo, "./web/static/uploads") // Upload path
+	documentHandler := transport.NewDocumentHandler(documentService)
+
 	// Router'ı Kur (Dependency Injection)
-	transport.NewRouter(r, jwtService, authHandler, dashboardHandler, clientHandler, caseHandler, hearingHandler, transactionHandler)
+	transport.NewRouter(r, jwtService, authHandler, dashboardHandler, clientHandler, caseHandler, hearingHandler, transactionHandler, documentHandler)
 
 	// 🌸 SEED: Eğer hiç kullanıcı yoksa Admin oluştur
 	seedUsers(userService)

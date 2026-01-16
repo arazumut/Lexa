@@ -12,6 +12,7 @@ type Config struct {
 	AppPort      string
 	DBPath       string
 	Environment  string
+	JWTSecret    string
 }
 
 func LoadConfig() *Config {
@@ -23,6 +24,7 @@ func LoadConfig() *Config {
 		AppPort:     getEnv("APP_PORT", "8080"),
 		DBPath:      getEnv("DB_PATH", "./lexa.db"),
 		Environment: getEnv("ENV", "development"),
+		JWTSecret:   getEnv("JWT_SECRET", "default-insecure-secret-do-not-use-in-prod"),
 	}
 }
 

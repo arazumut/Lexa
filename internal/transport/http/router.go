@@ -14,8 +14,9 @@ func NewRouter(
 	dashboardHandler *DashboardHandler,
 	clientHandler *ClientHandler,
 	caseHandler *CaseHandler,
-	hearingHandler *HearingHandler, // Yeni eklendi
+	hearingHandler *HearingHandler,
 	transactionHandler *TransactionHandler,
+	documentHandler *DocumentHandler, // YENİ
 ) {
 	// 1. PUBLIC ROUTE'LAR (Herkes Girebilir)
 	public := r.Group("/")
@@ -71,5 +72,10 @@ func NewRouter(
 		protected.GET("/api/accounting", transactionHandler.List)
 		protected.POST("/api/accounting", transactionHandler.Create)
 		protected.DELETE("/api/accounting/:id", transactionHandler.Delete)
+
+		// 📄 Evrak (Document) İşlemleri
+		protected.POST("/api/documents/upload", documentHandler.Upload)
+		protected.DELETE("/api/documents/:id", documentHandler.Delete)
+		protected.GET("/api/cases/:id/documents", documentHandler.ListByCase)
 	}
 }
