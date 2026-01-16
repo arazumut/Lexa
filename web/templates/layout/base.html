@@ -222,14 +222,14 @@
                     <div class="tab-pane active" id="menu">
                         <nav id="left-sidebar-nav" class="sidebar-nav">
                             <ul id="main-menu" class="metismenu li_animation_delay">
-                                <li class="active">
+                                <li id="menu-dashboard">
                                     <a href="/" class="has-arrow"><i
                                             class="fa fa-dashboard"></i><span>Dashboard</span></a>
                                 </li>
-                                <li>
+                                <li id="menu-clients">
                                     <a href="/clients"><i class="fa fa-users"></i><span>Müvekkiller</span></a>
                                 </li>
-                                <li>
+                                <li id="menu-cases">
                                     <a href="#Cases" class="has-arrow" aria-expanded="false"><i
                                             class="fa fa-folder"></i><span>Dava Dosyaları</span></a>
                                     <ul aria-expanded="false" class="collapse">
@@ -237,7 +237,7 @@
                                         <li><a href="/cases/new">Yeni Dosya Ekle</a></li>
                                     </ul>
                                 </li>
-                                <li>
+                                <li id="menu-hearings">
                                     <a href="#Hearings" class="has-arrow" aria-expanded="false"><i
                                             class="fa fa-calendar"></i><span>Duruşmalar</span></a>
                                     <ul aria-expanded="false" class="collapse">
@@ -245,7 +245,7 @@
                                         <li><a href="/hearings/new">Yeni Duruşma Ekle</a></li>
                                     </ul>
                                 </li>
-                                <li>
+                                <li id="menu-accounting">
                                     <a href="#Accounting" class="has-arrow" aria-expanded="false"><i
                                             class="fa fa-money"></i><span>Muhasebe</span></a>
                                     <ul aria-expanded="false" class="collapse">
@@ -342,6 +342,51 @@
         // ... (Diğer scriptler: logout, mini-stats) ...
 
         // 🔍 GLOBAL SEARCH LOGIC (JQUERY UI AUTOCOMPLETE veya BASİT LISTENER)
+        // ... (Mevcut kod) ...
+
+        // 🌟 SIDEBAR ACTIVE STATE LOGIC
+        // URL'e bakarak hangi menünün "active" olacağını belirler
+        document.addEventListener("DOMContentLoaded", function () {
+            const currentPath = window.location.pathname;
+
+            // Her şeyi temizle önce
+            document.querySelectorAll('#main-menu li').forEach(li => li.classList.remove('active'));
+            document.querySelectorAll('#main-menu ul').forEach(ul => ul.classList.remove('in'));
+            document.querySelectorAll('#main-menu a').forEach(a => {
+                a.setAttribute('aria-expanded', 'false');
+                a.classList.remove('active');
+            });
+
+            let activeMenuId = "menu-dashboard"; // Varsayılan
+
+            if (currentPath.startsWith("/clients")) {
+                activeMenuId = "menu-clients";
+            } else if (currentPath.startsWith("/cases")) {
+                activeMenuId = "menu-cases";
+            } else if (currentPath.startsWith("/hearings")) {
+                activeMenuId = "menu-hearings";
+            } else if (currentPath.startsWith("/accounting")) {
+                activeMenuId = "menu-accounting";
+            }
+
+            // Ana menüyü aktif et
+            const activeLi = document.getElementById(activeMenuId);
+            if (activeLi) {
+                activeLi.classList.add('active');
+
+                // Alt menü varsa aç
+                const subMenu = activeLi.querySelector('ul');
+                const toggleLink = activeLi.querySelector('a.has-arrow');
+                if (subMenu) {
+                    subMenu.classList.add('in'); // Bootstrap/MetisMenu "in" class ile açılıyor
+                    subMenu.setAttribute('aria-expanded', 'true');
+                }
+                if (toggleLink) {
+                    toggleLink.classList.add('active');
+                    toggleLink.setAttribute('aria-expanded', 'true');
+                }
+            }
+        });
         // Bootstrap Typeahead benzeri bir yapı
         document.addEventListener("DOMContentLoaded", function () {
             const searchInput = document.querySelector('#navbar-search input');
