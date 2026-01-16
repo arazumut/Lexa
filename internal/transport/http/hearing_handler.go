@@ -98,6 +98,45 @@ func (h *HearingHandler) List(c *gin.Context) {
 	})
 }
 
+// CalendarEvents - FullCalendar için JSON formatında veri döner
+func (h *HearingHandler) CalendarEvents(c *gin.Context) {
+	// Takvim görünümü için daha geniş bir aralık çekebiliriz.
+	// Şimdilik son 1000 duruşmayı çekelim. 
+	// İdeal olan start/end parametrelerine göre filtrelemektir.
+	hearings, _, err := h.service.ListHearings(1, 1000, 0)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Veriler çekilemedi"})
+		return
+	}
+
+	var events []gin.H
+	for _, hearing := range hearings {
+		color := "bg-info"
+		if hearing.Status == "completed" {
+			color = "bg-success"
+		} else if hearing.Status == "cancelled" {
+			color = "bg-danger"
+		} else if hearing.Status == "postponed" {
+			color = "bg-warning"
+		}
+
+		title := hearing.Title
+		if hearing.Case.ID != 0 {
+			title = hearing.Case.FileNumber + " - " + title
+		}
+
+		events = append(events, gin.H{
+			"id":        hearing.ID,
+			"title":     title,
+			"start":     hearing.Date, // ISO8601
+			"className": color,
+			"url":       "/hearings/" + strconv.Itoa(int(hearing.ID)) + "/edit", // Düzenlemeye git
+		})
+	}
+
+	c.JSON(http.StatusOK, events)
+}
+
 func (h *HearingHandler) Create(c *gin.Context) {
 	var hearing domain.Hearing
 	

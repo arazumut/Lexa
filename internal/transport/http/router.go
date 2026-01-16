@@ -63,6 +63,7 @@ func NewRouter(
 		
 		protected.GET("/api/hearings", hearingHandler.List)
 		protected.POST("/api/hearings", hearingHandler.Create)
+		protected.GET("/api/hearings/calendar", hearingHandler.CalendarEvents) // YENİ: Takvim Verisi
 		protected.PUT("/api/hearings/:id", hearingHandler.Update)
 		protected.DELETE("/api/hearings/:id", hearingHandler.Delete)
 

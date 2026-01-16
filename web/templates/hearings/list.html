@@ -10,8 +10,17 @@
             </ul>
         </div>
         <div class="col-lg-6 col-md-4 col-sm-12 text-right">
-            <div class="d-flex flex-row-reverse">
-                <a href="/hearings/new" class="btn btn-primary"><i class="fa fa-plus"></i> Yeni Duruşma Planla</a>
+            <div class="d-flex flex-row-reverse align-items-center">
+                <a href="/hearings/new" class="btn btn-primary ml-2"><i class="fa fa-plus"></i> Yeni Duruşma Planla</a>
+
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    <label class="btn btn-outline-secondary active" onclick="showView('list')">
+                        <input type="radio" name="view" autocomplete="off" checked> Liste
+                    </label>
+                    <label class="btn btn-outline-secondary" onclick="showView('calendar')">
+                        <input type="radio" name="view" autocomplete="off"> Takvim
+                    </label>
+                </div>
             </div>
         </div>
     </div>
@@ -20,29 +29,40 @@
 <div class="row clearfix">
     <div class="col-lg-12">
         <div class="card">
-            <div class="header">
-                <h2>Yaklaşan ve Geçmiş Duruşmalar</h2>
-            </div>
-            <div class="body">
-                <div class="table-responsive">
-                    <table class="table table-hover js-basic-example dataTable table-custom dt-responsive nowrap w-100"
-                        id="hearingsTable">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th data-priority="1">Tarih / Saat</th>
-                                <th data-priority="3">Durum</th>
-                                <th>Dava Dosyası</th>
-                                <th data-priority="2">Konu</th>
-                                <th>Konum / Mahkeme</th>
-                                <th data-priority="4">İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- DataTables -->
-                        </tbody>
-                    </table>
+
+            <!-- LISTE GÖRÜNÜMÜ -->
+            <div id="listView">
+                <div class="header">
+                    <h2>Yaklaşan ve Geçmiş Duruşmalar</h2>
+                </div>
+                <div class="body">
+                    <div class="table-responsive">
+                        <table
+                            class="table table-hover js-basic-example dataTable table-custom dt-responsive nowrap w-100"
+                            id="hearingsTable">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th data-priority="1">Tarih / Saat</th>
+                                    <th data-priority="3">Durum</th>
+                                    <th>Dava Dosyası</th>
+                                    <th data-priority="2">Konu</th>
+                                    <th>Konum / Mahkeme</th>
+                                    <th data-priority="4">İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+
+            <!-- TAKVİM GÖRÜNÜMÜ -->
+            <div id="calendarView" style="display: none;">
+                <div class="body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -50,22 +70,28 @@
 
 {{ define "scripts" }}
 <link rel="stylesheet" href="/assets/vendor/jquery-datatable/dataTables.bootstrap4.min.css">
-<script src="/assets/bundles/datatablescripts.bundle.js"></script>
+<!-- FullCalendar CSS -->
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
 
-<!-- Moment JS için gerekli olabilir, DataTables tarih sort için -->
+<script src="/assets/bundles/datatablescripts.bundle.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<!-- FullCalendar JS -->
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/tr.js'></script>
 
 <script>
+    var calendar = null;
+
     $(document).ready(function () {
-        $('#hearingsTable').DataTable({
+        // 1. DataTables Init
+        var table = $('#hearingsTable').DataTable({
             "processing": true,
             "serverSide": true,
             "ajax": "/api/hearings",
-            "order": [[0, "asc"]], // Tarihe göre artan (En yakın en üstte)
+            "order": [[0, "asc"]],
             "columns": [
                 {
                     "data": "date", "render": function (data) {
-                        // Tarih formatlama
                         return moment(data).format('DD.MM.YYYY HH:mm');
                     }
                 },
@@ -82,7 +108,6 @@
                 },
                 {
                     "data": "case", "render": function (data) {
-                        // Case null gelebilir mi? Teoride hayır ama kontrol edelim
                         if (!data) return '-';
                         return '<a href="/cases/' + data.id + '/edit"><strong>' + data.file_number + '</strong></a><br><small>' + data.client.name + '</small>';
                     }
@@ -97,11 +122,50 @@
                 }
             ],
             "responsive": true,
-            "language": {
-                "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Turkish.json"
-            }
+            "language": { "url": "//cdn.datatables.net/plug-ins/1.10.20/i18n/Turkish.json" }
         });
     });
+
+    // Görünüm Değiştirme
+    function showView(viewName) {
+        if (viewName === 'list') {
+            document.getElementById('listView').style.display = 'block';
+            document.getElementById('calendarView').style.display = 'none';
+        } else {
+            document.getElementById('listView').style.display = 'none';
+            document.getElementById('calendarView').style.display = 'block';
+
+            // Calendar ilk kez açılıyorsa render et
+            if (!calendar) {
+                initCalendar();
+            } else {
+                calendar.updateSize(); // Görünür olunca boyutunu güncelle
+            }
+        }
+    }
+
+    // FullCalendar Init
+    function initCalendar() {
+        var calendarEl = document.getElementById('calendar');
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'tr',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: '/api/hearings/calendar', // JSON Endpoint
+            eventClick: function (info) {
+                if (info.event.url) {
+                    window.location.href = info.event.url;
+                    info.jsEvent.preventDefault();
+                }
+            },
+            height: 650
+        });
+        calendar.render();
+    }
 
     function deleteHearing(id) {
         if (confirm("Bu duruşma kaydını silmek istediğinize emin misiniz?")) {
@@ -111,6 +175,7 @@
                 success: function (result) {
                     toastr.success("Duruşma silindi.", "Başarılı");
                     $('#hearingsTable').DataTable().ajax.reload();
+                    if (calendar) calendar.refetchEvents(); // Takvimi de yenile
                 },
                 error: function (xhr) {
                     toastr.error("Hata: " + (xhr.responseJSON ? xhr.responseJSON.error : "Bilinmeyen hata"), "Hata");
