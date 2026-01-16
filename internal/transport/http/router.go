@@ -47,6 +47,7 @@ func NewRouter(
 		// Dava (Case) İşlemleri
 		protected.GET("/cases", caseHandler.ShowList)
 		protected.GET("/cases/new", caseHandler.ShowCreate)
+		protected.GET("/cases/:id", caseHandler.ShowDetail) // YENİ: Detay Route
 		protected.GET("/cases/:id/edit", caseHandler.ShowEdit)
 		
 		protected.GET("/api/cases", caseHandler.List)

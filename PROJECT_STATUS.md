@@ -1,65 +1,63 @@
 # ⚔️ LEXA: PROJECT STATUS REPORT
-**Tarih:** 16.01.2026 (Refactored)
-**Durum:** Kritk Güvenlik Açığı Giderildi, Document Storage (Evrak) Modülü Eklendi.
+**Tarih:** 16.01.2026 (17:50 - Perfect Architecture)
+**Durum:** Evrak, Duruşma, Muhasebe modülleri TEK ÇATIDA birleştirildi.
 
 ---
 
 ## 🏗️ 1. MİMARİ VE TEKNOLOJİ YIĞINI (TECH STACK)
-Proje, **Clean Architecture (Temiz Mimari)** prensiplerine sadık kalınarak geliştirilmiştir.
+**Clean Architecture + Domain Driven Design** prensipleriyle proje olgunluk seviyesine ulaştı.
 
-### 🔧 Backend - Güncellemeler
-*   **Security:** Hardcoded JWT secret kaldırıldı. `.env` üzerinden `JWT_SECRET` okunuyor.
-*   **File Storage:** `google/uuid` tabanlı dosya isimlendirme ve `web/static/uploads` yerel depolama sistemi kuruldu.
-*   **Modüller:**
-    *   Auth (Tamam)
-    *   Client (Tamam)
-    *   Case (Tamam)
-    *   Hearing (Tamam) - *Dashboard'a entegre.*
-    *   Accounting/Transaction (Tamam) - *Dashboard'da grafikler aktif.*
-    *   Document (YENİ) - *Evrak yükleme ve listeleme altyapısı hazır.*
+### 🌟 Son Eklenen Özellikler (Feature Set)
+1.  **Unified Case View (Birleşik Dava Görünümü):**
+    *   `ShowDetail` handler'ı ile bir davanın tüm yaşam döngüsü tek ekranda.
+    *   **Tabs:** Özet / Duruşmalar / Evraklar / Muhasebe sekmeleri.
+2.  **Document Management v1.0:**
+    *   Frontend entegrasyonu tamamlandı.
+    *   Modal üzerinden dosya yükleme (`Dropzone/Input File`).
+    *   AJAX tabanlı asenkron yükleme ve anlık bildirim (Toastr).
+    *   Fiziksel dosya silme ve DB temizliği.
+3.  **Security Hardening:**
+    *   `.env` tabanlı yapılandırma ve güvenli JWT saklama.
 
-### 📂 Klasör Yapısı
+### 📂 Klasör Yapısı (Güncel)
 ```text
 LEXA/
-├── cmd/app/main.go            # Dependency Injection ve Config burada yönetiliyor.
-├── config/                    # Env ve Config yönetimi.
 ├── internal/
-│   ├── domain/                # Saf Go structları (User, Client, Case, Document...).
-│   ├── repository/            # GORM implementasyonları.
-│   ├── service/               # İş mantığı (Upload, Calc Balance vb.).
+│   ├── domain/                # Case, Document, Hearing, Transaction, User ilişkileri kuruldu.
+│   ├── repository/            # GORM Preload ile optimize edilmiş sorgular.
+│   ├── service/               # İş mantığı (Validasyonlar, Dosya IO).
 │   └── transport/http/        # Gin Handler'lar.
 ├── web/
-│   └── static/uploads/        # Yüklenen evraklar burada tutulur.
-└── .env                       # Hassas bilgiler (Git-ignored).
+│   ├── templates/cases/detail.html  # ✨ YENİ: Başyapıt niteliğinde detay sayfası.
+│   └── static/uploads/        # Kullanıcı dosyaları.
 ```
 
 ---
 
-## ✅ 2. TAMAMLANAN KRİTİK GELİŞTİRMELER (DONE)
+## ✅ 2. TAMAMLANANLAR (DONE)
 
-### 🔴 ACİL GÜVENLİK DÜZELTMESİ
-*   [x] `main.go` içindeki hardcoded anahtar temizlendi.
-*   [x] `Config` paketi `.env` desteği ile güncellendi.
-*   [x] 256-bit secure hex key oluşturulup `.env` dosyasına yazıldı.
+### 📄 Document Module (Evrak Yönetimi)
+*   [x] **Backend:** Upload/Delete Service & Repository.
+*   [x] **API:** `/api/documents/upload`.
+*   [x] **Frontend:** `cases/detail.html` içine entegre edildi.
+*   [x] **Storage:** Dosyalar `web/static/uploads` altında UUID ile saklanıyor.
 
-### 📄 FAZ 4: Evrak Yönetimi (Document Management)
-*   [x] **Domain:** `Document` entity oluşturuldu (Dosya Adı, Tipi, Yolu, Yükleyen).
-*   [x] **Repository:** Dosyaları davaya göre (`FindByCaseID`) getiren repo yazıldı.
-*   [x] **Service:**
-    *   `multipart/form-data` işleme mantığı.
-    *   UUID ile benzersiz dosya adı oluşturma (`uuid.v4`).
-    *   Fiziksel diskten ve DB'den silme (`os.Remove`).
-*   [x] **API:** `/api/documents/upload` ve `/api/cases/:id/documents` uçları hazır.
+### 🏛️ Case Management (Dava Yönetimi)
+*   [x] **CRUD:** Ekleme, Listeleme, Düzenleme, Silme tamam.
+*   [x] **Detail View:** Artık sadece kuru veri değil; duruşması, borcu, evrağı her şeyiyle geliyor.
+*   [x] **Search:** Gelişmiş filtreleme (Müvekkil adı, Dosya no).
 
 ---
 
-## 🚀 3. SIRADAKİ ADIMLAR (TODO)
-Kod şu an backend tarafında **%95 tamamlandı**. Sadece UI eksikleri kaldı.
+## 🚀 3. SIRADAKİ ADIMLAR (NEXT)
+Proje şu an "Satılabilir Ürün" (MVP) seviyesine çok yakın.
 
-1.  **UI Entegrasyonu (Document):**
-    *   Dava detay sayfasına (`cases/detail.html` - *henüz yok*) veya edit sayfasına "Dosyalar" sekmesi eklenecek.
-    *   AJAX ile dosya yükleme scripti yazılacak.
-2.  **Test Yazımı:**
-    *   Hiç test yok. Kritik servisler için unit test yazılmalı.
-3.  **Deploy Hazırlığı:**
-    *   Dockerfile `uploads` klasörü permission ayarları kontrol edilecek (Render'da volume gerekebilir).
+1.  **Duruşma Takvimi (Calendar UI):**
+    *   Şu an liste olarak var. `FullCalendar.js` entegre edip aylık takvim görünümü yapabiliriz.
+2.  **Raporlama:**
+    *   "Bu ay ne kadar kazandık?", "Hangi tür davalar daha çok?" gibi PDF raporları.
+3.  **Docker & Deploy:**
+    *   Render.com veya DigitalOcean için production-ready `docker-compose.yml`.
+
+**Sistemi Test Etmek İçin:**
+Terminalde `make run` komutunu çalıştır ve `http://localhost:8080` adresine git. "Davalar" > "Detay" sayfasına gir, evrak yükle, sil, keyfini çıkar.

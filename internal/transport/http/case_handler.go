@@ -75,6 +75,28 @@ func (h *CaseHandler) ShowEdit(c *gin.Context) {
 	})
 }
 
+// ShowDetail - Dava dosyasının tüm detaylarını gösterir (Evraklar, Duruşmalar, Muhasebe dahil)
+func (h *CaseHandler) ShowDetail(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	// Repository'den Preload ile her şeyi çekiyoruz.
+	caseFile, err := h.service.GetCase(uint(id))
+	if err != nil {
+		c.Redirect(http.StatusFound, "/cases")
+		return
+	}
+
+	email, _ := c.Get("email")
+	
+	c.HTML(http.StatusOK, "cases/detail.html", gin.H{
+		"title": caseFile.FileNumber + " - Dava Detayı",
+		"email": email,
+		"case":  caseFile, 
+		// "case.Documents", "case.Hearings", "case.Transactions" zaten içinde dolu geliyor.
+	})
+}
+
+
 // List - DataTables API Endpoint
 func (h *CaseHandler) List(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("length", "10"))

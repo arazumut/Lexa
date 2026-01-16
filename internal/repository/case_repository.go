@@ -28,8 +28,19 @@ func (r *caseRepository) Delete(id uint) error {
 
 func (r *caseRepository) FindByID(id uint) (*domain.Case, error) {
 	var c domain.Case
-	// Müvekkil bilgisini de ("Client") preload ile çekiyoruz.
-	err := r.db.Preload("Client").First(&c, id).Error
+	// Müvekkil bilgisini, Duruşmaları, Evrakları ve Finansal Hareketleri preload ile çekiyoruz.
+	err := r.db.Preload("Client").
+		Preload("Hearings", func(db *gorm.DB) *gorm.DB {
+			return db.Order("date asc") // Yaklaşan duruşmalar önce gelsin
+		}).
+		Preload("Documents", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at desc") // Yeni evraklar üstte
+		}).
+		Preload("Documents.Uploader"). // Evrakı kim yüklemiş?
+		Preload("Transactions", func(db *gorm.DB) *gorm.DB {
+			return db.Order("date desc") // Son işlem üstte
+		}).
+		First(&c, id).Error
 	if err != nil {
 		return nil, err
 	}

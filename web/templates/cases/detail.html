@@ -1,0 +1,304 @@
+{{ define "content" }}
+<div class="block-header">
+    <div class="row">
+        <div class="col-lg-6 col-md-8 col-sm-12">
+            <h2><a href="javascript:void(0);" class="btn btn-xs btn-link btn-toggle-fullwidth"><i class="fa fa-arrow-left"></i></a> Dava Dosyası Detayı</h2>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/"><i class="icon-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="/cases">Davalar</a></li>
+                <li class="breadcrumb-item active">Dosya Detayı</li>
+            </ul>
+        </div>
+        <div class="col-lg-6 col-md-4 col-sm-12 text-right">
+             <a href="/cases/{{ .case.ID }}/edit" class="btn btn-info"><i class="fa fa-pencil"></i> Düzenle</a>
+             <button type="button" class="btn btn-danger" onclick="deleteCase({{ .case.ID }})"><i class="fa fa-trash"></i> Sil</button>
+        </div>
+    </div>
+</div>
+
+<div class="row clearfix">
+    <!-- Dava Künyesi -->
+    <div class="col-lg-4 col-md-12">
+        <div class="card profile-header">
+            <div class="body text-center">
+                <div class="profile-image"> <img src="/assets/images/case_icon.png" class="rounded-circle" alt="Case" onerror="this.src='/assets/images/user.png'"> </div>
+                <div>
+                    <h4 class="m-b-0"><strong>{{ .case.FileNumber }}</strong></h4>
+                    <span>{{ .case.Title }}</span>
+                </div>
+                <div class="m-t-15">
+                    {{ if eq .case.Status "active" }}<span class="badge badge-success">Devam Ediyor</span>
+                    {{ else if eq .case.Status "closed" }}<span class="badge badge-secondary">Kapandı</span>
+                    {{ else }}<span class="badge badge-warning">{{ .case.Status }}</span>{{ end }}
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="header">
+                <h2>Dosya Bilgileri</h2>
+            </div>
+            <div class="body">
+                <small class="text-muted">Müvekkil:</small>
+                <p><a href="/clients/{{ .case.ClientID }}">{{ if .case.Client.Name }}{{ .case.Client.Name }}{{ else }}Müvekkil Silinmiş{{ end }}</a></p>
+                <hr>
+                <small class="text-muted">Mahkeme:</small>
+                <p>{{ .case.Court }}</p>
+                <hr>
+                <small class="text-muted">Hakim:</small>
+                <p>{{ .case.Judge }}</p>
+                <hr>
+                <small class="text-muted">Dava Türü:</small>
+                <p>{{ .case.Type }}</p>
+                <hr>
+                <small class="text-muted">Açılma Tarihi:</small>
+                <p>{{ .case.StartDate.Format "02.01.2006" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sekmeler (Tabs) -->
+    <div class="col-lg-8 col-md-12">
+        <div class="card">
+            <div class="body">
+                <ul class="nav nav-tabs-new">
+                    <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#Overview">Özet & Notlar</a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Hearings">Duruşmalar <span class="badge badge-warning">{{ len .case.Hearings }}</span></a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Documents">Evraklar <span class="badge badge-info">{{ len .case.Documents }}</span></a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#Financial">Muhasebe</a></li>
+                </ul>
+                <div class="tab-content mt-3">
+                    
+                    <!-- 1. Özet Sekmesi -->
+                    <div class="tab-pane active" id="Overview">
+                        <h6>Dosya Açıklaması</h6>
+                        <p>{{ .case.Description }}</p>
+                    </div>
+
+                    <!-- 2. Duruşmalar Sekmesi -->
+                    <div class="tab-pane" id="Hearings">
+                        <div class="header d-flex justify-content-between">
+                            <h2>Duruşma Geçmişi</h2>
+                            <a href="/hearings/new?case_id={{ .case.ID }}" class="btn btn-sm btn-primary"><i class="fa fa-plus"></i> Yeni Duruşma</a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Konu</th>
+                                        <th>Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{ range .case.Hearings }}
+                                    <tr>
+                                        <td>{{ .Date.Format "02.01.2006 15:04" }}</td>
+                                        <td>{{ .Title }}</td>
+                                        <td>{{ .Status }}</td>
+                                    </tr>
+                                    {{ else }}
+                                    <tr><td colspan="3" class="text-center text-muted">Kayıtlı duruşma yok.</td></tr>
+                                    {{ end }}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 3. EVRAKLAR (Documents) Sekmesi -->
+                    <div class="tab-pane" id="Documents">
+                        <div class="header d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="m-0">Evrak Listesi</h6>
+                            <!-- Upload Butonu (Trigger Modal) -->
+                            <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#uploadModal">
+                                <i class="fa fa-upload"></i> Evrak Yükle
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Evrak Adı</th>
+                                        <th>Kategori</th>
+                                        <th>Yükleyen</th>
+                                        <th>İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{ range .case.Documents }}
+                                    <tr>
+                                        <td>{{ .CreatedAt.Format "02.01.2006" }}</td>
+                                        <td>
+                                            <a href="{{ .FilePath }}" target="_blank">
+                                                <i class="fa fa-file-pdf-o text-danger"></i> {{ .FileName }}
+                                            </a>
+                                            <br>
+                                            <small class="text-muted">{{ .Description }}</small>
+                                        </td>
+                                        <td><span class="badge badge-default">{{ .Category }}</span></td>
+                                        <td>{{ .Uploader.Name }}</td>
+                                        <td>
+                                            <button onclick="deleteDocument({{ .ID }})" class="btn btn-sm btn-outline-danger" title="Sil"><i class="fa fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    {{ else }}
+                                    <tr><td colspan="5" class="text-center text-muted">Henüz yüklenmiş evrak yok.</td></tr>
+                                    {{ end }}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 4. Muhasebe Sekmesi -->
+                    <div class="tab-pane" id="Financial">
+                         <div class="header d-flex justify-content-between">
+                            <h2>Finansal Hareketler</h2>
+                            <a href="/accounting/new?case_id={{ .case.ID }}" class="btn btn-sm btn-primary"><i class="fa fa-plus"></i> İşlem Ekle</a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Açıklama</th>
+                                        <th>Tür</th>
+                                        <th>Tutar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{ range .case.Transactions }}
+                                    <tr>
+                                        <td>{{ .Date.Format "02.01.2006" }}</td>
+                                        <td>{{ .Description }}</td>
+                                        <td>
+                                            {{ if eq .Type "income" }}<span class="badge badge-success">Tahsilat</span>
+                                            {{ else }}<span class="badge badge-danger">Masraf</span>{{ end }}
+                                        </td>
+                                        <td class="text-right"><strong>{{ .Amount }}₺</strong></td>
+                                    </tr>
+                                    {{ else }}
+                                    <tr><td colspan="4" class="text-center text-muted">Finansal kayıt yok.</td></tr>
+                                    {{ end }}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="title" id="defaultModalLabel">Yeni Evrak Yükle</h4>
+            </div>
+            <div class="modal-body">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <input type="hidden" name="case_id" value="{{ .case.ID }}">
+                    
+                    <div class="form-group">
+                        <label>Dosya Seç</label>
+                        <input type="file" name="document" class="form-control-file" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <select name="category" class="form-control">
+                            <option value="Dilekçe">Dilekçe</option>
+                            <option value="Karar">Mahkeme Kararı</option>
+                            <option value="Bilirkişi">Bilirkişi Raporu</option>
+                            <option value="Delil">Delil / Belge</option>
+                            <option value="Diğer">Diğer</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                         <label>Açıklama</label>
+                         <textarea name="description" class="form-control" rows="2" placeholder="Evrak hakkında kısa bilgi..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="uploadDocument()">YÜKLE</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">İptal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ end }}
+
+{{ define "scripts" }}
+<script>
+    // 1. Dosya Yükleme (AJAX)
+    function uploadDocument() {
+        var form = document.getElementById('uploadForm');
+        var formData = new FormData(form);
+
+        // Butonu disable et, yükleniyor göster
+        var btn = document.querySelector('#uploadModal .btn-primary');
+        var originalText = btn.innerText;
+        btn.innerText = 'Yükleniyor...';
+        btn.disabled = true;
+
+        fetch('/api/documents/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                toastr.error(data.error);
+            } else {
+                toastr.success('Dosya başarıyla yüklendi.');
+                setTimeout(() => location.reload(), 1000); // 1 sn sonra sayfayı yenile
+            }
+        })
+        .catch(error => {
+            console.error('Hata:', error);
+            toastr.error('Bir hata oluştu.');
+        })
+        .finally(() => {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        });
+    }
+
+    // 2. Dosya Silme
+    function deleteDocument(id) {
+        if(!confirm('Bu evrakı silmek istediğinize emin misiniz?')) return;
+
+        fetch('/api/documents/' + id, { method: 'DELETE' })
+        .then(response => {
+            if(response.ok) {
+                toastr.success('Evrak silindi.');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                toastr.error('Silinemedi.');
+            }
+        });
+    }
+
+    // 3. Dava Silme
+    function deleteCase(id) {
+         if(!confirm('DİKKAT! Bu dava dosyasını ve bağlı tüm kayıtları (duruşma, evrak) silmek istediğinize emin misiniz?')) return;
+
+         fetch('/api/cases/' + id, { method: 'DELETE' })
+        .then(response => {
+            if(response.ok) {
+                toastr.success('Dosya silindi.');
+                setTimeout(() => window.location.href='/cases', 1000);
+            } else {
+                toastr.error('Silinemedi.');
+            }
+        });
+    }
+</script>
+{{ end }}
