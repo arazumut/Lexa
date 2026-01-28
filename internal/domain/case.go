@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// CaseStatus dava durumunu belirtir.
 type CaseStatus string
 type CaseType string
 
