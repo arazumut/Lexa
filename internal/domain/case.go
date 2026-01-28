@@ -24,8 +24,6 @@ const (
 	CaseTypeOther          CaseType = "other"           // Diğer
 )
 
-// Case, bir dava dosyasını temsil eder.
-// Clean Architecture: Entity
 type Case struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
 	ClientID    uint           `gorm:"not null;index" json:"client_id"`        // Hangi müvekkile ait?
@@ -46,18 +44,13 @@ type Case struct {
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
-// CaseRepository interface (Port)
 type CaseRepository interface {
 	Create(c *Case) error
 	Update(c *Case) error
 	Delete(id uint) error
 	FindByID(id uint) (*Case, error)
-	// FindAll sayfalama, arama ve filtreleme destekler.
-	// clientID opsiyoneldir, 0 ise tüm davaları getirir.
 	FindAll(page, pageSize int, search string, clientID uint) ([]Case, int64, int64, error)
-	// RecentCases dashboard için son eklenen veya güncellenen davaları getirir.
 	RecentCases(limit int) ([]Case, error)
-	// GetCaseStats dava durumlarına göre sayıları döner (active: 10, closed: 5 gibi)
 	GetCaseStats() (map[string]int64, error)
 }
 
