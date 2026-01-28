@@ -53,8 +53,6 @@ type CaseRepository interface {
 	RecentCases(limit int) ([]Case, error)
 	GetCaseStats() (map[string]int64, error)
 }
-
-// CaseService interface (Port)
 type CaseService interface {
 	CreateCase(c *Case) error
 	UpdateCase(c *Case) error
